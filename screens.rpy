@@ -27,6 +27,8 @@ style gui_text:
 
 style button:
     properties gui.button_properties("button")
+    hover_sound "audio/click.wav.mp3"
+    activate_sound "audio/sound.wav.wav"
 
 style button_text is gui_text:
     properties gui.text_properties("button")
@@ -99,29 +101,25 @@ screen say(who, what):
 
     window:
         id "window"
-        # dialog box settings here
 
-        if who:
-            if who == "???":
-                window:
-                    id "namebox"                
-                    style "namebox"
-                    text who id "who"
-            else:
+        # Using an hbox to place the name and dialogue horizontally.
+        hbox:
+            yalign 0.5 # This will vertically center the name and dialogue within the textbox.
+            spacing 30 # Adjusts the space between the name and the text.
+
+            if who:
                 window:
                     id "namebox"
-                    style "namebox"    
+                    style "namebox"
                     text who id "who"
 
-        text what id "what"
 
+            text what id "what"
 
     ## If there's a side image, display it above the text. Do not display on the
     ## phone variant - there's no room.
     if not renpy.variant("small"):
         add SideImage() xalign 0.0 yalign 1.0
-
-
 
 
 ## Make the namebox available for styling through the Character object.
@@ -136,6 +134,13 @@ style say_thought is say_dialogue
 style namebox is default
 style namebox_label is say_label
 
+# Add name_text style for bigger and bold character names
+style name_text:
+    font "PressStart2P.ttf"
+    size 60  # Bigger size for names
+    bold True  # Make names bold
+    color "#ffffff"  # White color for better visibility
+    outlines [(2, "#000000", 0, 0)]  # Black outline for better readability
 
 style window:
     xalign 0.5
@@ -147,37 +152,31 @@ style window:
 
 
 style namebox:
-    xalign 0.05  # Set to 0.0 (left), 0.5 (center), or 1.0 (right)
-    yalign 0.0 
-    xoffset 1000  # Adjust as needed for horizontal shift
-    yoffset -153 # A
-    background Frame("gui/namebox.png", gui.namebox_borders, tile=gui.namebox_tile, xalign=0.0)
-    padding (50, 30)
-
-style sec_namebox is namebox:
-    xalign 0.05  # Set to 0.0 (left), 0.5 (center), or 1.0 (right)
-    yalign 0.0 
-    xoffset 1300  # Adjust as needed for horizontal shift
-    yoffset -153 # Adjust as needed for vertical shift
+    xalign 1.0  # Right side of the screen
+    yalign 0  # Same as textbox_yalign (bottom of screen) Move up by the textbox height to position it on top
     padding (6, 2)
-    color "#000000"
-
+    color "#66ccff"  # A light blue color for the name, like in the image.
+    background Frame("gui/namebox.png", 20, 15)
 
 style say_label:
     properties gui.text_properties("name", accent=True)
-    
-    xalign 0.3
-    yalign 0.5
+
+    # Use our custom name_text style for better character names
+    font "PressStart2P.ttf"
+    size 60
+    bold True
+    color "#ffffff"
+    outlines [(2, "#000000", 0, 0)]
 
 
 style say_dialogue:
-    color "#00f662"   # Black text
+    color "#ff6666"   # A reddish color for the dialogue, like in the image.
     properties gui.text_properties("dialogue")
 
-    xalign 0.12
-    yalign 0.710
+    xalign 0.35
+    yalign 0.5
     xpos 643
-    ypos 123
+    ypos 5
 
     adjust_spacing False
 
@@ -245,6 +244,7 @@ style choice_vbox:
 
 style choice_button is default:
     properties gui.button_properties("choice_button")
+    activate_sound "audio/sound.wav.wav"
 
 style choice_button_text is default:
     properties gui.text_properties("choice_button")
@@ -330,6 +330,10 @@ style quick_button_text is button_text
 
 style quick_button:
     properties gui.button_properties("quick_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+
+    activate_sound "audio/sound.wav.wav"
 
 style quick_button_text:
     properties gui.text_properties("quick_button")
@@ -352,7 +356,7 @@ screen main_navigation():
         style_prefix "navigation"
         spacing gui.navigation_spacing
 
-        imagebutton auto "gui/mm_start_%s.png" focus_mask True action Start() hovered [Play("sound", "audio/click.wav")]
+        imagebutton auto "gui/mm_start_%s.png" focus_mask True action Start()
         imagebutton auto "gui/mm_save_%s.png" focus_mask True action ShowMenu("load")
         imagebutton auto "gui/mm_pref_%s.png" focus_mask True action ShowMenu("preferences")
         imagebutton auto "gui/mm_about_%s.png" focus_mask True action ShowMenu("about")
@@ -368,7 +372,7 @@ screen main_navigation():
 
             text "[config.version]":
                 style "main_menu_version"
-        
+
 
 style navigation_button is gui_button
 style navigation_button_text is gui_button_text
@@ -376,11 +380,19 @@ style navigation_button_text is gui_button_text
 style navigation_button:
     size_group "navigation"
     properties gui.button_properties("navigation_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+
+    activate_sound "audio/sound.wav.wav"
 
 style navigation_button_text:
     properties gui.text_properties("navigation_button")
 
 
+style navigation_image_button:
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 
 ## Main Menu screen ############################################################
@@ -769,15 +781,27 @@ style page_label_text:
 
 style page_button:
     properties gui.button_properties("page_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style page_button_text:
     properties gui.text_properties("page_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style slot_button:
     properties gui.button_properties("slot_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style slot_button_text:
     properties gui.text_properties("slot_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 
 ## Preferences screen ##########################################################
@@ -924,9 +948,15 @@ style radio_vbox:
 style radio_button:
     properties gui.button_properties("radio_button")
     foreground "gui/button/radio_[prefix_]foreground.png"
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style radio_button_text:
     properties gui.text_properties("radio_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style check_vbox:
     spacing gui.pref_button_spacing
@@ -934,9 +964,15 @@ style check_vbox:
 style check_button:
     properties gui.button_properties("check_button")
     foreground "gui/button/check_[prefix_]foreground.png"
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style check_button_text:
     properties gui.text_properties("check_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style slider_slider:
     xsize 700
@@ -945,9 +981,15 @@ style slider_button:
     properties gui.button_properties("slider_button")
     yalign 0.5
     left_margin 20
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style slider_button_text:
     properties gui.text_properties("slider_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style slider_vbox:
     xsize 900
@@ -1190,9 +1232,15 @@ style help_text is gui_text
 style help_button:
     properties gui.button_properties("help_button")
     xmargin 16
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style help_button_text:
     properties gui.text_properties("help_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style help_label:
     xsize 500
@@ -1268,9 +1316,15 @@ style confirm_prompt_text:
 
 style confirm_button:
     properties gui.button_properties("confirm_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 style confirm_button_text:
     properties gui.text_properties("confirm_button")
+    hover_sound "audio/click.wav.mp3"
+        $ renpy.sound.set_volume(0.1, channel="sound")  # 30% volume
+    activate_sound "audio/sound.wav.wav"
 
 
 ## Skip indicator screen #######################################################
@@ -1688,13 +1742,14 @@ style slider_slider:
 screen splash_screen():
     tag menu
 
-    add "splash_bg"  # Replace with your background image filename
+    add "splash_bg" at fadein # Replace with your background image filename
 
     text "Press to Continue" xpos 0.5 ypos 0.9 xanchor 0.5 yanchor 0.5 size 40 color "#FFFFFF" outlines [(2, "#000000")]
 
-    key "mouseup_1" action Return()  # Mouse click
-    key "K_RETURN" action Return()   # Enter key
-    key "K_SPACE" action Return()    # Spacebar
+    # Capture mouse or key to set variable
+    key "mouseup_1" action SetVariable("splash_done", True)
+    key "K_RETURN" action SetVariable("splash_done", True)
+    key "K_SPACE" action SetVariable("splash_done", True)
 
 
 
@@ -1720,7 +1775,7 @@ screen ui_customization():
         textbutton "Return" action Return()
 
 
-        
+
 ##############################################################################
 #  CUSTOM NAVIGATION CHOICE SCREEN
 ##############################################################################
@@ -1828,15 +1883,15 @@ screen information_desk():
         padding(20, 65)
         xpos 1000
         ypos 550
-        textbutton "Check Information Desk" action Jump("information_desk") 
-    
+        textbutton "Check Information Desk" action Jump("information_desk")
+
     # to view the information desk image
     frame:
         background Frame("gui/nav_png", 15, 15)
         padding(20, 65)
         xpos 1000
         ypos 550
-        textbutton "Walk Back" action Jump("callscreen") 
+        textbutton "Walk Back" action Jump("callscreen")
 
 screen inside_choice_menu():
 
@@ -1933,7 +1988,7 @@ screen right_hall_menu1():
         xpos 2100     #  ← move this one near the gate sprite
         ypos 750
         textbutton "Director's Office" action Jump("director")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)
@@ -1951,7 +2006,7 @@ screen right_hall_menu1():
 
 screen right_hall_menu2():
     frame:
-        background Frame("gui/nav_box.png", 15, 15)        
+        background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 100        #  ← adjust these two numbers
         ypos 750         #  ← until the box sits right over the door
@@ -1963,7 +2018,7 @@ screen right_hall_menu2():
         xpos 1325    #  ← move this one near the gate sprite
         ypos 700
         textbutton "Garden" action Jump("garden_1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)
@@ -1993,7 +2048,7 @@ screen garden_view():
         xpos 900   #  ← adjust these two numbers
         ypos 900#  ← until the box sits right over the door
         textbutton "Garden" action Jump("garden_view_menu1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2015,7 +2070,7 @@ screen cat():
         xpos 800    #  ← adjust these two numbers
         ypos 900#  ← until the box sits right over the door
         textbutton "Walk further" action Jump("back_garden_view")
-        
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2052,8 +2107,8 @@ screen entrance_hideout():
         xpos 1300    #  ← adjust these two numbers
         ypos 1000#  ← until the box sits right over the door
         textbutton "Go outside the Hideout" action Jump("choicethree")
-    
-    
+
+
 
 screen menu1():
     frame:
@@ -2102,14 +2157,14 @@ screen right_hall_menu3():
         xpos 1100      #  ← adjust these two numbers
         ypos 750         #  ← until the box sits right over the door
         textbutton "Walk Further" action Jump("floor2_1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1900    #  ← adjust these two numbers
         ypos 750         #  ← until the box sits right over the door
         textbutton "Male Bathroom" action Jump("male_bathroom1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2123,18 +2178,18 @@ screen right_hall_menu3():
         xpos 50       #  ← adjust these two numbers
         ypos 1250         #  ← until the box sits right over the door
         textbutton "Go downstair" action Jump("right_hall_forward3")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1100    #  ← adjust these two numbers
         ypos 1250         #  ← until the box sits right over the door
-        textbutton "Fire Exit" action Jump("fire_exit") 
-   
+        textbutton "Fire Exit" action Jump("fire_exit")
+
 
 screen room():
     # ── 2nd Floor Room───────────────────────────────────────────────────
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)
@@ -2148,14 +2203,14 @@ screen room():
         xpos 1150    #  ← adjust these two numbers
         ypos 800        #  ← until the box sits right over the door
         textbutton "Walk Further" action Jump("floor2_3")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1175    #  ← adjust these two numbers
         ypos 1250        #  ← until the box sits right over the door
         textbutton "Walk Back" action Jump("second_floor_menu")
-        
+
 screen pup():
     # ── PUP Library ───────────────────────────────────────────────────
     frame:
@@ -2164,14 +2219,14 @@ screen pup():
         xpos 300   #  ← adjust these two numbers
         ypos 800       #  ← until the box sits right over the door
         textbutton "Library" action Jump("pup_library")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1215    #  ← adjust these two numbers
         ypos 800        #  ← until the box sits right over the door
         textbutton "Walk Further" action Jump("floor_1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2187,21 +2242,21 @@ screen discussion():
         xpos 200   #  ← adjust these two numbers
         ypos 800       #  ← until the box sits right over the door
         textbutton "Discussion" action Jump("discussion_room")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1200    #  ← adjust these two numbers
         ypos 800        #  ← until the box sits right over the door
         textbutton "Walk Further" action Jump("floor__1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1225    #  ← adjust these two numbers
         ypos 1250        #  ← until the box sits right over the door
         textbutton "Walk Back" action Jump("floor2_3")
-    
+
 screen second_last_floor():
     frame:
         background Frame("gui/nav_box.png", 15, 15)
@@ -2209,14 +2264,14 @@ screen second_last_floor():
         xpos 1000   #  ← adjust these two numbers
         ypos 1000        #  ← until the box sits right over the door
         textbutton "Go downstair" action Jump("left_ground_3")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1800   #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "Go upstair" action Jump("third1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2312,7 +2367,7 @@ screen left_ground_menu3():
         ypos 500
         textbutton "AVR" action Jump("avr_room")
 
-    
+
     # ── AVR Inside ───────────────────────────────────────────────────────
     frame:
         background Frame("gui/nav_box.png", 15, 15)
@@ -2320,7 +2375,7 @@ screen left_ground_menu3():
         xpos 900
         ypos 700
         textbutton "Walk Further" action Jump("floor__2")
-    
+
     # ── HIDE OUT ───────────────────────────────────────────────────────
     frame:
         background Frame("gui/nav_box.png", 15, 15)
@@ -2328,7 +2383,7 @@ screen left_ground_menu3():
         xpos 1225
         ypos 800
         textbutton "Hide Out" action Jump("g")
-    
+
 
 screen third_floor1():
     frame:
@@ -2337,14 +2392,14 @@ screen third_floor1():
         xpos 1370   #  ← adjust these two numbers
         ypos 800        #  ← until the box sits right over the door
         textbutton "Girl's CR" action Jump("girls_cr")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1600   #  ← adjust these two numbers
         ypos 950        #  ← until the box sits right over the door
         textbutton "Turn right" action Jump("turn_right")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2359,14 +2414,14 @@ screen third_floor2():
         xpos 1700   #  ← adjust these two numbers
         ypos 820        #  ← until the box sits right over the door
         textbutton "Room 307" action Jump("room_307")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1115  #  ← adjust these two numbers
         ypos 775        #  ← until the box sits right over the door
         textbutton "Walk Further" action Jump("turn_right_2")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2381,14 +2436,14 @@ screen third_floor3():
         xpos 1700   #  ← adjust these two numbers
         ypos 820        #  ← until the box sits right over the door
         textbutton "Room 305" action Jump("room_305")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1115  #  ← adjust these two numbers
         ypos 775        #  ← until the box sits right over the door
         textbutton "Walk Further" action Jump("turn_right1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2403,14 +2458,14 @@ screen third_floor4():
         xpos 1700   #  ← adjust these two numbers
         ypos 820        #  ← until the box sits right over the door
         textbutton "Room 302" action Jump("room_302")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1115  #  ← adjust these two numbers
         ypos 775        #  ← until the box sits right over the door
         textbutton "Walk Further" action Jump("turn_right5")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2426,7 +2481,7 @@ screen third_floor5():
         xpos 1700       #  ← adjust these two numbers
         ypos 750         #  ← until the box sits right over the door
         textbutton "Turn left" action Jump("turn_left")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2439,7 +2494,7 @@ screen third_floor5():
         padding (20, 65)
         xpos 1200       #  ← adjust these two numbers
         ypos 1300         #  ← until the box sits right over the door
-        textbutton "Walk back" action Jump("turn_right_4")    
+        textbutton "Walk back" action Jump("turn_right_4")
 
 screen third_floor6():
 
@@ -2456,7 +2511,7 @@ screen third_floor6():
         xpos 1200       #  ← adjust these two numbers
         ypos 1300         #  ← until the box sits right over the door
         textbutton "Walk back" action Jump("turn_right_2")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2501,7 +2556,7 @@ screen fourth_floor1():
         xpos 700    #  ← adjust these two numbers
         ypos 900        #  ← until the box sits right over the door
         textbutton "Turn left" action Jump("fourth_floors1")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2514,14 +2569,14 @@ screen fourth_floor1():
         padding (20, 65)                                 # inner padding
         xpos 2100    #  ← adjust these two numbers
         ypos 1300         #  ← until the box sits right over the door
-        textbutton "roof deck" action Jump("stair_roofdeck")    
-    
+        textbutton "roof deck" action Jump("stair_roofdeck")
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 900   #  ← adjust these two numbers
         ypos 1300       #  ← until the box sits right over the door
-        textbutton "Walk Back" action Jump("right_hall_forward3") 
+        textbutton "Walk Back" action Jump("right_hall_forward3")
 
 screen boy_bathroom():
     frame:
@@ -2554,14 +2609,14 @@ screen fourth():
         xpos 50    #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "Computer Laboratory" action Jump("comlab")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 2200    #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "Computer Hardware" action Jump("computer_hardware")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2583,14 +2638,14 @@ screen fourth1():
         xpos 100    #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "Project Proposal Room" action Jump("project_proposal")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 2050    #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "Laboratory Management" action Jump("lab_management")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2606,7 +2661,7 @@ screen fourth1():
         textbutton "Walk Back" action Jump("fourth_floors1")
 
 screen fourth2():
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2620,7 +2675,7 @@ screen fourth2():
         xpos 2100    #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "Kitchen Laboratory" action Jump("kitchen_lab")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2642,7 +2697,7 @@ screen fourth3():
         xpos 800    #  ← adjust these two numbers
         ypos 800        #  ← until the box sits right over the door
         textbutton "Student Org" action Jump("student_org")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2663,7 +2718,7 @@ screen fourth3():
         xpos 2200    #  ← adjust these two numbers
         ypos 800        #  ← until the box sits right over the door
         textbutton "HM Storage" action Jump("HM_storage")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2685,14 +2740,14 @@ screen fourth4():
         xpos 850    #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "CSC Room" action Jump("csc")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1300    #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "Deluxe Room" action Jump("deluxe_room")
-    
+
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
@@ -2714,7 +2769,7 @@ screen fourth5():
         xpos 700    #  ← adjust these two numbers
         ypos 700        #  ← until the box sits right over the door
         textbutton "Front Office of Travel & Tours" action Jump("frontofficetravel_tours")
-    
+
 
     frame:
         background Frame("gui/nav_box.png", 15, 15)

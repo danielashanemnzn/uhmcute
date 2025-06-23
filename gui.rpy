@@ -69,7 +69,7 @@ init python:
 
             # Define size attributes
             self.text_size = 40
-            self.name_text_size = 1000
+            self.name_text_size = 60
             self.interface_text_size = 40
             self.label_text_size = 36
             self.notify_text_size = 24
@@ -440,6 +440,9 @@ define gui.history_text_ypos = 3
 define gui.history_text_width = 1110
 define gui.history_text_xalign = 0.0
 
+define gui.namebox_style = "namebox"
+define gui.name_text_style = "name_text"
+
 
 ## NVL-Mode ####################################################################
 ##
@@ -514,7 +517,7 @@ init python:
 
         ## Font sizes.
         gui.text_size = 22
-        gui.name_text_size = 54
+        gui.name_text_size = 45
         gui.notify_text_size = 38
         gui.interface_text_size = 45
         gui.button_text_size = 45

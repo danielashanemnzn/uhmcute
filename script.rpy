@@ -4,12 +4,12 @@
 # Define a Character class to encapsulate character properties
 init python:
     class GameCharacter:
-        def __init__(self, name, color, who_style):
+        def __init__(self, name, color, namebox_style):
             self.name = name
             self.color = color
-            self.who_style = who_style
+            self.namebox_style = namebox_style
             # Create Ren'Py Character object
-            self.character = Character(name, color=color, who_style=who_style)
+            self.character = Character(name, color=color, namebox_style=namebox_style)
 
         # Method to access the Ren'Py Character object
         def get_character(self):
@@ -19,22 +19,22 @@ init python:
 define text_color = "#FFFFFF"
    
 # Instantiate character objects
-define jus = GameCharacter("Justine", "#335a3b", "namebox").get_character()
-define g   = GameCharacter("Guard", "#207476", "sec_namebox").get_character()
-define k   = GameCharacter("Kim", "#e84393", "sec_namebox").get_character()
-define c   = GameCharacter("Carl", "#113d29", "sec_namebox").get_character()
+define jus = GameCharacter("Justine", "#2ec14b", "namebox" ).get_character()
+define g   = GameCharacter("Guard", "#966bf3", "namebox").get_character()
+define k   = GameCharacter("Kim", "#c2ff1a", "namebox").get_character()
+define c   = GameCharacter("Carl", "#0cff8d", "namebox").get_character()
 define cj   = GameCharacter("Carl", "#113d29", "namebox").get_character()
-define n   = GameCharacter("Nurse", "#E9967A", "sec_namebox").get_character()
-define ma  = GameCharacter("Mae", "#E23A32", "sec_namebox").get_character()
+define n   = GameCharacter("Nurse", "#E9967A", "namebox").get_character()
+define ma  = GameCharacter("Mae", "#E23A32", "namebox").get_character()
 define m   = GameCharacter("Mae", "#E23A32", "namebox").get_character()
-define s   = GameCharacter("Sophie", "#A23A32", "sec_namebox").get_character()
-define l   = GameCharacter("Lyn", "#AB3A32", "sec_namebox").get_character()
-define e   = GameCharacter("Ella", "#3A3AB4", "sec_namebox").get_character()
-define v   = GameCharacter("Vidal", "#3A8084", "sec_namebox").get_character()
-define cs  = GameCharacter("Cashier", "#09091e", "sec_namebox").get_character()
-define j   = GameCharacter("Joriemer", "#519c90", "sec_namebox").get_character()
-define vd = GameCharacter("Vendor", "#519d80", "sec_namebox").get_character()
-define gui.name_text_size = 100  # Change 40 to your desired font size
+define s   = GameCharacter("Sophie", "#A23A32", "namebox").get_character()
+define l   = GameCharacter("Lyn", "#AB3A32", "namebox").get_character()
+define e   = GameCharacter("Ella", "#3A3AB4", "namebox").get_character()
+define v   = GameCharacter("Vidal", "#3A8084", "namebox").get_character()
+define cs  = GameCharacter("Cashier", "#09091e", "namebox").get_character()
+define j   = GameCharacter("Joriemer", "#519c90", "namebox").get_character()
+define vd = GameCharacter("Vendor", "#519d80", "namebox").get_character()
+# define gui.name_text_size = 100  # Commented out - now managed in gui.rpy
 
 ################################################################################
 #  TRANSFORMS
@@ -141,6 +141,11 @@ transform mae_bottom_left:
     yalign 1.0
     anchor (0.0, 1.0)
     zoom 0.7
+
+transform fadein:
+    alpha 0.0
+    linear 1.0 alpha 1.0  # 1 second fade-in
+
 ################################################################################
 #  IMAGE_DEFINITIONS+-
 ################################################################################
@@ -560,6 +565,17 @@ init python:
 
 label splashscreen:
     play music "audio/main_theme.mp3" fadein 1.0
+    $ splash_done = False
+    scene black
+    show screen splash_screen
+    with fade  # Fade-in
+
+    while not splash_done:
+        $ renpy.pause(0.5)
+
+    hide screen splash_screen
+    with fade  # Fade-out
+
     return
 label staret:
     # Show Justine in normal state
@@ -576,7 +592,7 @@ label staret:
 
 label start:
     scene bg_room at custom_size_transform with fade
-    play music "audio/bgm1.mp3" fadein 1.0 loop    
+    play music "audio/bgmusictut.mp3" volume 0.1 loop    
 
     voice "audio/carl/line1.MP3"
     show expression carl.get_image("normal") at center with dissolve
@@ -673,7 +689,7 @@ label main_game:
     c "This is where the real story begins..."
     stop music fadeout 1.0
 
-    play music "audio/bgm2.mp3" loop
+    play music "audio/bgmusicstart.mp3" loop
     scene bg_gate at custom_size_transform with fade
     # Lower BGM volume before voice
     $ renpy.music.set_volume(0.1, channel="music")  # 30% volume
@@ -697,6 +713,7 @@ label main_game:
     hide expression justine.get_image("talking") at justine_bottom_left
 
     show expression guard.get_image("annoyed") at kim_bottom_right with dissolve
+    voice "audio/guard/line4.mp3"
     g "Ayy, pasensya na iho pero bawal kang pumasok pag wala kang I.D."
     hide expression guard.get_image("annoyed") at kim_bottom_right with dissolve
     # CHOICE MENU -------------------------------------------------------------
@@ -714,6 +731,7 @@ label go_home:
     show expression justine.get_image("talking") at justine_bottom_left
     jus "Ayy ganon po ba… sige po kuya, uwi na lang po ako."
     show expression guard.get_image("normal") at kim_bottom_right
+    voice "audio/guard/choice1/line2.MP3"
     g "Sa susunod, siguraduhing may I.D ka ha."
     hide expression guard.get_image("normal") at kim_bottom_right with dissolve
     show expression justine.get_image("talking") at justine_bottom_left
@@ -723,10 +741,10 @@ label go_home:
     hide expression justine.get_image("normal") with None
     $ renpy.pause(0.2)
     window show
-    voice "audio/guard/choice1/line2.MP3"
+    voice "audio/guard/choice1/line3.MP3"
     jus "(Grabe nakalimutan ko nga pala ang higpit pala ng guard pero ok lang atleast safe ang estudyante dito sa higpit ng guard, kaysa
     \n naman sa ibang school may guard nga pero wala namang pakialam pano nalang kung may insidente, at least dito samin safe naman."
-    voice "audio/guard/choice1/line3.MP3"
+    voice "audio/guard/choice1/line4.MP3"
     jus "(hayss, nu bayan pagbabalik pa ko malalate din naman ako, hindi pa nagpapapasok yung prof namin kapag late, sige na nga 
     \n bukas nalang ako papasok.)"
     "THE END"
@@ -785,6 +803,7 @@ label call_kim:
     voice "audio/guard/choice2/line8.mp3"
 
     show expression guard.get_image("happy") at kim_bottom_right with dissolve
+    voice "audio/guard/choice2/line8.mp3"
     g "Hmm… sige, pwede na kayong pumasok."
     hide expression guard.get_image("happy") with dissolve
     hide expression justine.get_image("holding_phone") with dissolve
@@ -1107,10 +1126,10 @@ label clinic_room:
     jus "Dito ako tumatambay minsan dahil sa sakit ng ulo, pati na din dahil sa minsan na pasakit ng loob."
     show expression justine.get_image("Sighing") at justine_bottom_left
     voice "audio/clinic/line3.mp3"
-    jus "Minsang umupo ako d’yan hindi dahil sa masamang pakiramdam kundi dahil gusto ko lang ng pahinga. \nAt ang Nurse? Parang naging nanay ko pa."
+    jus "Minsang umupo ako d'yan hindi dahil sa masamang pakiramdam kundi dahil gusto ko lang ng pahinga. \nAt ang Nurse? Parang naging nanay ko pa."
     show expression justine.get_image("smiling") at justine_bottom_left
     voice "audio/clinic/line4.mp3"
-    jus "Palagi niya akong tinatanong, ‘Okay ka lang ba talaga?’ Nakakamiss toh talaga."
+    jus "Palagi niya akong tinatanong, 'Okay ka lang ba talaga? Nakakamiss toh talaga."
     # Start of flashback sequence
     scene clinic1 at custom_size_transform with fade
     show expression nurse.get_image("normal") at right
@@ -1289,7 +1308,7 @@ label adm_office1:
 
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/admin/line12.mp3"
-    jus "Justine po ma’am from BSIT 4-1"
+    jus "Justine po ma'am from BSIT 4-1"
 
     show expression vidal.get_image("talking") at right
     voice "audio/admin/line13.mp3"
@@ -1318,7 +1337,7 @@ label adm_office2:
 
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/admin/line18.mp3"
-    jus "uhmmm... Justine po ma’am from BSIT 4-1 po"
+    jus "uhmmm... Justine po ma'am from BSIT 4-1 po"
 
     show expression vidal.get_image("angry_talking") at right
     voice "audio/admin/line19.mp3"
@@ -1372,7 +1391,8 @@ label lgbt_cr_menu:
     call screen lgbt_cr
 
 label back_garden:
-    scene bg_garden at custom_size_transform with fade
+    scene g1 at custom_size_transform with fade
+    scene g2 at custom_size_transform with fade
     show expression justine.get_image("normal") at justine_bottom_left
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/garden/line1.mp3"
@@ -1382,7 +1402,7 @@ label back_garden:
 
     show expression guard.get_image("normal") at kim_bottom_right
     show expression guard.get_image("talking_annoyed") at kim_bottom_right
-    
+    voice "audio/garden/line2.mp3"
     g "Oyyy oyy, bawal pumunta rito ng walang paalam"
     hide expression guard.get_image("normal") with dissolve
     hide expression guard.get_image("talking_annoyed") with dissolve
@@ -1394,23 +1414,22 @@ label back_garden:
     jus "Ahhh sige po kuya, alis na lang ako"
     hide expression justine.get_image("normal") with dissolve
     hide expression justine.get_image("talking") with dissolve
-    jump right_hall_forward2
+    jump right_hall_forward3
     return
 
 label back_garden_1:
-    scene bg_garden at custom_size_transform with fade
     scene g1 at custom_size_transform with fade
     scene g2 at custom_size_transform with fade
     scene g3 at custom_size_transform with fade
     scene g4 at custom_size_transform with fade
     scene g5 at custom_size_transform with fade
     show expression justine.get_image("normal") at justine_bottom_left
-    voice "audio/garden/line4.4mp3"
+    voice "audio/garden/line4.mp3"
     jus "Hmmmm, naaalala ko banda rito namin nilagay yung mga project na halaman noong first year kami"
     hide expression justine.get_image("normal") with dissolve
 
     show expression guard.get_image("annoyed") at right
-
+    voice "audio/garden/line5.mp3"
     g "Ang kulit mo ah! Diba sinabi ko na bawal dito?!"
     hide expression guard.get_image("annoyed") with dissolve
 
@@ -1419,24 +1438,29 @@ label back_garden_1:
     jus "Sorry po kuya, hindi na po mauulit"
     hide expression justine.get_image("normal") with dissolve
     show expression guard.get_image("annoyed") at right
+    voice "audio/garden/line7.mp3"
     g "Talagang hindi na mau-ulit to"
+    voice "audio/garden/line8.mp3"
     g "Dahil dadalhin na kita sa Admin Office"
     hide expression guard.get_image("annoyed") with dissolve
 
     show expression justine.get_image("normal") at justine_bottom_left
     show expression justine.get_image("talking") at justine_bottom_left
-    voice "audio/garden/line7.mp3"
+    voice "audio/garden/line9.mp3"
     jus "Sorry po kuya, patawarin niyo na po ako, gusto ko lang naman pong mag-ikot"
     hide expression justine.get_image("normal") with dissolve
     hide expression justine.get_image("talking") with dissolve
 
     show expression guard.get_image("annoyed") at right
+    voice "audio/garden/line10.mp3"
     g "Magpaliwanag ka nalang sa Admin Office"
     hide expression guard.get_image("annoyed") with dissolve
 
     scene bg_admin_office at custom_size_transform with fade
     show expression guard.get_image("annoyed") at right
+    voice "audio/garden/admin/line1.mp3"
     g "Good morning po Ma'am, irereklamo ko lang po ito. Paulit-ulit na kasi at hindi sumusunod"
+    voice "audio/garden/admin/line2.mp3"
     g "Pumupunta sa mga lugar na hindi dapat puntahan ng walang permiso"
     hide expression guard.get_image("annoyed") with dissolve
     show expression vidal.get_image("normal") at right
@@ -1697,6 +1721,7 @@ label room_204:
         # Start of the Flashback
         scene chair1 at custom_size_transform with fade
         show expression carl.get_image("suggesting") at right
+        voice "audio/room_204/line3.mp3"
         c "kabayo ay di natin problema~  pulot at damo lang ay tama na~"
         show expression carl.get_image("talking") at right
         hide expression carl.get_image("suggesting") with dissolve
@@ -1854,7 +1879,7 @@ label faculty_lounge:
         show expression justine.get_image("scared") at justine_bottom_left
         show expression justine.get_image("talking") at justine_bottom_left
         voice "audio/faculty/line5.mp3"
-        jus "Ramdam ko pa din ‘yung kaba tuwing kumakatok ako sa pinto."
+        jus "Ramdam ko pa din 'yung kaba tuwing kumakatok ako sa pinto."
         show expression justine.get_image("scared")
         hide expression justine.get_image("talking") 
         jump left_ground_2
@@ -2001,7 +2026,7 @@ label room_305:
     hide expression mae.get_image("smiling") with dissolve
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/room_305/line6.mp3"
-    jus "Naalala ko rin ‘yung lecture na walang kuryente. Ang init, pero tuloy pa rin, ‘yun ang tunay na dedication"
+    jus "Naalala ko rin 'yung lecture na walang kuryente. Ang init, pero tuloy pa rin, 'yun ang tunay na dedication"
     show expression justine.get_image("happy") at justine_bottom_left
     show expression justine.get_image("laughing") at justine_bottom_left
     hide expression justine.get_image("talking ") with dissolve
@@ -2054,7 +2079,7 @@ label room_307:
     scene room307_1 at custom_size_transform with fade
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/room_307/line1.mp3"
-    jus " ayy naalala ko tong room na ‘to. Ito yung isa sa mga room na ‘di ko makalimutan."
+    jus " ayy naalala ko tong room na 'to. Ito yung isa sa mga room na 'di ko makalimutan."
     show expression justine.get_image("happy") at justine_bottom_left
     hide expression justine.get_image("happy") 
     hide expression justine.get_image("talking") with dissolve
@@ -2458,7 +2483,7 @@ label student_org:
         scene student_org1 at custom_size_transform with fade
         show expression justine.get_image("talking") at justine_bottom_left
         voice "audio/student_org/line1.mp3"
-        jus "Hmm, org room eto yung room na ginagamit nila pag kaylangan ng mga org. Andito din mga gamit ng iba’t ibang org"
+        jus "Hmm, org room eto yung room na ginagamit nila pag kaylangan ng mga org. Andito din mga gamit ng iba't ibang org"
         hide expression justine.get_image("talking") at justine_bottom_left
         
         show expression justine.get_image("laughing") at justine_bottom_left
@@ -2481,7 +2506,7 @@ label housekeeping_room:
         voice "audio/housekeeping/line1.mp3"
         jus "Housekeeping Room."
         voice "audio/housekeeping/line2.mp3"
-        jus "Parang ilang beses ko nang nadadaanan ‘to pero never ko pa rin siya napapasok"
+        jus "Parang ilang beses ko nang nadadaanan 'to pero never ko pa rin siya napapasok"
         voice "audio/housekeeping/line3.mp3"
         jus "Naalala ko yung sabi ni Mae dati…"
         hide expression justine.get_image("talking") with dissolve
@@ -2489,12 +2514,12 @@ label housekeeping_room:
         # Flashback
         show expression justine.get_image("smiling") at justine_bottom_left
         voice "audio/housekeeping/line4.mp3"
-        jus "Para saan kaya ‘to?"
+        jus "Para saan kaya 'to?"
         hide expression justine.get_image("smiling") with dissolve
 
         show expression mae.get_image("talking") at right
         voice "audio/housekeeping/line5.mp3"
-        m "Ah, ‘yan?"
+        m "Ah, 'yan?"
         voice "audio/housekeeping/line6.mp3"
         m "Diyan raw nagpa-practice yung HM students ng mga housekeeping tasks"
         voice "audio/housekeeping/line7.mp3"
@@ -2502,13 +2527,13 @@ label housekeeping_room:
         voice "audio/housekeeping/line8.mp3"
         m "Parang mini-hotel room training area."
         voice "audio/housekeeping/line9.mp3"
-        m "May mga gamit d’yan like mop, linen, tsaka mga hotel-grade supplies."
+        m "May mga gamit d'yan like mop, linen, tsaka mga hotel-grade supplies."
         voice "audio/housekeeping/line10.mp3"
         m "Parang combo siya ng storage at simulation room."
         voice "audio/housekeeping/line11.mp3"        
-        m "Hindi halata, pero malaking tulong ‘to sa training nila"
+        m "Hindi halata, pero malaking tulong 'to sa training nila"
         voice "audio/housekeeping/line12.mp3"
-        m "Diyan nila natututunan ‘yung mga standard na pang-hotel service."
+        m "Diyan nila natututunan 'yung mga standard na pang-hotel service."
         voice "audio/housekeeping/line13.mp3"
         m "Kaya malinis din sa paligid—sanay sila"
         hide expression mae.get_image("talking") with dissolve
@@ -2582,20 +2607,20 @@ label csc:
         voice "audio/csc/line1.mp3"
         jus "CSC Room."
         voice "audio/csc/line2.mp3"
-        jus "Laging naka-lock ‘to tuwing dumadaan ako. Pero parang may aura siya na… ‘di ka basta-basta puwedeng pumasok"
+        jus "Laging naka-lock 'to tuwing dumadaan ako. Pero parang may aura siya na… 'di ka basta-basta puwedeng pumasok"
         hide expression justine.get_image("talking") with dissolve
         # Flashback
         scene csc_room1 at custom_size_transform with dissolve
         voice "audio/csc/line3.mp3"
         show expression justine.get_image("Sighing") at justine_bottom_left
-        jus "Sophie, anong meron dito? Para kasing... ‘secret base."
+        jus "Sophie, anong meron dito? Para kasing... 'secret base."
         hide expression justine.get_image("Sighing") with dissolve
 
         show expression sophie.get_image("talking") at right
         voice "audio/csc/line4.mp3"
         s "Haha! In a way, oo."
         voice "audio/csc/line5.mp3"
-        s "‘Yan yung office ng Central Student Council."
+        s "'Yan yung office ng Central Student Council."
         voice "audio/csc/line6.mp3"
         s "Diyan ginagawa lahat ng mga plans, meetings, at minsan drama rin—lalo na pag elections."
         voice "audio/csc/line7.mp3"
@@ -2618,7 +2643,7 @@ label csc:
         voice "audio/csc/line12.mp3"
         s "Exactly. Kung may problemang student-related"
         voice "audio/csc/line13.mp3"
-        s "malamang dito napag-uusapan ‘yon bago makarating sa admin."
+        s "malamang dito napag-uusapan 'yon bago makarating sa admin."
         hide expression sophie.get_image("smiling") with dissolve
         # End Flashback
         scene csc_room2 at custom_size_transform with fade
@@ -2654,15 +2679,15 @@ label deluxe_room:
         hide expression justine.get_image("happy") with dissolve
         show expression kim.get_image("talking") at right
         voice "audio/deluxe/line4.mp3"
-        k "Ay, ‘yan yung De Luxe Room!"
+        k "Ay, 'yan yung De Luxe Room!"
         voice "audio/deluxe/line5.mp3"
-        k "Pang-simulation ‘yan ng hotel setup para sa HM students."
+        k "Pang-simulation 'yan ng hotel setup para sa HM students."
         voice "audio/deluxe/line6.mp3"
         k "Diyan sila natututo kung paano mag-set up ng real hotel room"
         voice "audio/deluxe/line7.mp3"
-        k "from bed sheets to lighting, pati na rin ‘yung guest interaction."
+        k "from bed sheets to lighting, pati na rin 'yung guest interaction."
         voice "audio/deluxe/line8.mp3"
-        k "Kompleto ‘yann—may bed CR, vanity area, towels, pillows, like sa real hotels"
+        k "Kompleto 'yann—may bed CR, vanity area, towels, pillows, like sa real hotels"
         voice "audio/deluxe/line9.mp3"
         hide expression kim.get_image("talking") with dissolve
         show expression justine.get_image("realised") at justine_bottom_left
@@ -2716,7 +2741,7 @@ label travel_tours:
         hide expression justine.get_image("talking") with dissolve
         show expression jorie.get_image("talking") at right
         voice "audio/travel_tours/line4.mp3"
-        j "Ah, ‘yan yung Travel and Tour Room nila."
+        j "Ah, 'yan yung Travel and Tour Room nila."
         voice "audio/travel_tours/line5.mp3"
         j "Dito sila nagpa-practice yung Tourism students kung paano maging travel agents"
         voice "audio/travel_tours/line6.mp3"
@@ -2765,25 +2790,25 @@ label standard_room:
         scene standard_room at custom_size_transform with dissolve
         show expression justine.get_image("talking") at justine_bottom_left
         voice "audio/standard_room/line2.mp3"
-        jus "Akala ko bodega lang ‘to dati. Standard Room pala ang tawag?"
+        jus "Akala ko bodega lang 'to dati. Standard Room pala ang tawag?"
         hide expression justine.get_image("talking") with dissolve
         show expression mae.get_image("smiling") at right
         voice "audio/standard_room/line3.mp3"
-        m "Haha! Hindi ‘yan bodega, uy. Training room ‘yan ng HM students."
+        m "Haha! Hindi 'yan bodega, uy. Training room 'yan ng HM students."
         voice "audio/standard_room/line4.mp3"
         m "Mas basic siya kaysa sa De Luxe, pero dito muna sila nagpa-practice bago dun"
         voice "audio/standard_room/line5.mp3"
-        m "Diyan nila unang natutunan ‘yung bed making, towel folding, guest essentials setup."
+        m "Diyan nila unang natutunan 'yung bed making, towel folding, guest essentials setup."
         voice "audio/standard_room/line6.mp3"
         m "Halos lahat ng firsts nila bilang hotelier, dito nagsisimula"
         hide expression mae.get_image("smiling") with dissolve
         show expression justine.get_image("talking") at justine_bottom_left
         voice "audio/standard_room/line7.mp3"
-        jus "So parang ‘foundations room’?"
+        jus "So parang 'foundations room'?"
         hide expression justine.get_image("talking") with dissolve
         show expression mae.get_image("talking") at right
         voice "audio/standard_room/line8.mp3"
-        m "Exactly. ‘Pag nagkamali ka dito, okay lang"
+        m "Exactly. 'Pag nagkamali ka dito, okay lang"
         voice "audio/standard_room/line9.mp3"
         m "Dito ka muna matututo bago ka iharap sa mas sosyal na kwarto."
         hide expression mae.get_image("talking") with dissolve
@@ -2841,7 +2866,7 @@ label main_gate_last:
     hide expression justine.get_image("crying")  
     show expression justine.get_image("sighing") at justine_bottom_left
     voice "audio/roofdeck/line8.mp3"
-    jus "ang hirap pala magpaalam… pero ang sarap din sa puso kapag alam mong hindi mo sayang ‘yung bawat araw na nandito ka"
+    jus "ang hirap pala magpaalam… pero ang sarap din sa puso kapag alam mong hindi mo sayang 'yung bawat araw na nandito ka"
     hide expression justine.get_image("sighing")
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/roofdeck/line9.mp3"

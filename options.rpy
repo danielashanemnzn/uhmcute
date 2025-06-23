@@ -30,7 +30,7 @@ define config.version = "1.0"
 ## Text that is placed on the game's about screen. Place the text between the
 ## triple-quotes, and leave a blank line between paragraphs.
 
-define gui.about = _p("""Memoir of the Halls is a story-driven visual novel that takes you deep into the silent corners of a school where memories linger long after the bell has rung. As you explore forgotten rooms and cross paths with familiar faces, you’ll uncover fragments of laughter, loss, and everything in between. Each hallway holds a story and each choice brings you closer to the truth behind them.
+define gui.about = _p("""Memoir of the Halls is a story-driven visual novel that takes you deep into the silent corners of a school where memories linger long after the bell has rung. As you explore forgotten rooms and cross paths with familiar faces, you'll uncover fragments of laughter, loss, and everything in between. Each hallway holds a story and each choice brings you closer to the truth behind them.
 """)
 
 
@@ -38,7 +38,7 @@ define gui.about = _p("""Memoir of the Halls is a story-driven visual novel that
 ## distribution. This must be ASCII-only, and must not contain spaces, colons,
 ## or semicolons.
 
-define build.name = "Memoirsinthehalls"
+define build.name = "ByteMe"
 
 define config.main_menu_music = "audio/main_theme.mp3"
 
@@ -123,6 +123,9 @@ define config.window_hide_transition = Dissolve(.2)
 
 ## Preference defaults #########################################################
 
+## The default volume for the sound effects mixer.
+default preferences.sfx_volume = 0.25
+
 ## Controls the default text speed. The default, 0, is infinite, while any other
 ## number is the number of characters per second to type out.
 
@@ -156,7 +159,7 @@ define config.save_directory = "Memoirsinthehalls-1748134447"
 ##
 ## The icon displayed on the taskbar or dock.
 
-define config.window_icon = "gui/window_icon.png"
+define config.window_icon = "window_icon.png"
 
 
 ## Build configuration #########################################################
