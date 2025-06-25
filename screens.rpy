@@ -224,9 +224,10 @@ style input:
 ## https://www.renpy.org/doc/html/screen_special.html#choice
 
 screen choice(items):
-    style_prefix "choice"
-
+    style_prefix "menu_choice"
     vbox:
+        style_prefix "choice"
+
         for i in items:
             textbutton i.caption action i.action
 
@@ -234,6 +235,11 @@ screen choice(items):
 style choice_vbox is vbox
 style choice_button is button
 style choice_button_text is button_text
+
+style menu_choice:
+    font "Coolvetica Rg.otf"
+    size 26 # Change size as needed
+    hover_color "#444444FF" # When hovering
 
 style choice_vbox:
     xalign 0.5
@@ -282,13 +288,13 @@ init python:
             self.accent_color = '#00cc99'
             self.idle_color = '#888888'
             self.idle_small_color = '#aaaaaa'
-            self.hover_color = '#66e0c1'
-            self.selected_color = '#ffffff'
+            self.hover_color = '#124d12'
+            self.selected_color = '#124d12'
             self.insensitive_color = '#8888887f'
             self.muted_color = '#00513d'
             self.hover_muted_color = '#007a5b'
-            self.text_color = '#ffffff'
-            self.interface_text_color = '#ffffff'
+            self.text_color = '#124d12'
+            self.interface_text_color = '#124d12'
             self.quick_button_color = '#000000'  # Idle color for quick menu buttons
 
         def apply_colors(self):
@@ -492,7 +498,7 @@ screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
     if main_menu:
         add gui.main_menu_background
     else:
-        add gui.game_menu_background
+        add gui.game_menu_background xalign 0.5 yalign 0.5 xsize config.screen_width ysize config.screen_height
 
     frame:
         style "game_menu_outer_frame"
@@ -573,7 +579,7 @@ style game_menu_outer_frame:
     bottom_padding 60
     top_padding 240
 
-    background "gui/overlay/game_menu.png"
+    #background "gui/overlay/game_menu.jpg"
 
 style game_menu_navigation_frame:
     xsize 560
@@ -840,9 +846,9 @@ screen preferences():
 
                     vbox:
                         style_prefix "radio"
-                        label _("Display")
-                        textbutton _("Window") action Preference("display", "window")
-                        textbutton _("Fullscreen") action Preference("display", "fullscreen")
+                        label _("           Display")
+                        textbutton _("        Window") action Preference("display", "window")
+                        textbutton _("        Fullscreen") action Preference("display", "fullscreen")
 
                 vbox:
                     style_prefix "check"
@@ -994,7 +1000,11 @@ style slider_button_text:
 style slider_vbox:
     xsize 900
 
-
+screen documents():
+    frame:
+        xalign 0.5 ypos 50
+        add "images/doc1.jpg"
+  
 ## History screen ##############################################################
 ##
 ## This is a screen that displays the dialogue history to the player. While
@@ -1681,7 +1691,7 @@ style main_menu_frame:
 
 style game_menu_outer_frame:
     variant "small"
-    background "gui/phone/overlay/game_menu.png"
+    # background "gui/phone/overlay/game_menu.jpg"
 
 style game_menu_navigation_frame:
     variant "small"
@@ -2017,7 +2027,7 @@ screen right_hall_menu2():
         padding (20, 65)
         xpos 1325    #  ← move this one near the gate sprite
         ypos 700
-        textbutton "Garden" action Jump("garden_1")
+        textbutton "Garden" action Jump("garden_view_menu")
 
     frame:
         background Frame("gui/nav_box.png", 15, 15)
@@ -2047,7 +2057,7 @@ screen garden_view():
         padding (20, 65)                                 # inner padding
         xpos 900   #  ← adjust these two numbers
         ypos 900#  ← until the box sits right over the door
-        textbutton "Garden" action Jump("garden_view_menu1")
+        textbutton "Garden" action Jump("garden_view2")
 
     frame:
         background Frame("gui/nav_box.png", 15, 15)
@@ -2063,35 +2073,20 @@ screen garden_view():
         ypos 1280        #  ← until the box sits right over the door
         textbutton "Walk Back" action Jump("right_hall_forward3")
 
-screen cat():
-    frame:
-        background Frame("gui/nav_box.png", 15, 15)
-        padding (20, 65)                                 # inner padding
-        xpos 800    #  ← adjust these two numbers
-        ypos 900#  ← until the box sits right over the door
-        textbutton "Walk further" action Jump("back_garden_view")
-
-    frame:
-        background Frame("gui/nav_box.png", 15, 15)
-        padding (20, 65)                                 # inner padding
-        xpos 1250     #  ← adjust these two numbers
-        ypos 1280        #  ← until the box sits right over the door
-        textbutton "Walk Back" action Jump("garden_view_menu")
-
 screen back_garden():
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 800    #  ← adjust these two numbers
         ypos 900#  ← until the box sits right over the door
-        textbutton "Walk further" action Jump("garden_back1")
+        textbutton "Walk further" action Jump("back_garden")
 
     frame:
         background Frame("gui/nav_box.png", 15, 15)
         padding (20, 65)                                 # inner padding
         xpos 1250     #  ← adj  ust these two numbers
         ypos 1280        #  ← until the box sits right over the door
-        textbutton "Walk Back" action Jump("garden_view_menu1")
+        textbutton "Walk Back" action Jump("garden_view_menu")
 
 screen entrance_hideout():
     frame:
@@ -2147,7 +2142,7 @@ screen fire_exit_inside_menu1():
         padding(20, 65)
         xpos 1380
         ypos 750
-        textbutton "Garden" action Jump("garden_view2")
+        textbutton "Garden" action Jump("garden_view1")
 
 
 screen right_hall_menu3():

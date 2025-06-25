@@ -29,16 +29,16 @@ init python:
     class GUIColors:
         def __init__(self):
             # Define color attributes
-            self.accent_color = '#00cc99'
+            self.accent_color = '#002b20'
             self.idle_color = '#888888'
             self.idle_small_color = '#aaaaaa'
-            self.hover_color = '#66e0c1'
-            self.selected_color = '#ffffff'
+            self.hover_color = '#124d12'
+            self.selected_color = '#124d12'
             self.insensitive_color = '#8888887f'
             self.muted_color = '#00513d'
             self.hover_muted_color = '#007a5b'
-            self.text_color = '#ffffff'
-            self.interface_text_color = '#ffffff'
+            self.text_color = '#540202'
+            self.interface_text_color = '#b75f5f'
 
         # Method to apply colors to Ren'Py's gui namespace
         def apply_colors(self):
@@ -244,7 +244,7 @@ init python:
             self.choice_button_text_xalign = 0.5
             self.choice_button_text_yalign = 0.5
             self.choice_button_text_idle_color = '#888888'
-            self.choice_button_text_hover_color = '#ffffff'
+            self.choice_button_text_hover_color = '#ac2c79'
             self.choice_button_text_insensitive_color = '#8888887f'
 
             # Slot Button Settings

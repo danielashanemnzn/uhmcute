@@ -142,6 +142,12 @@ transform mae_bottom_left:
     anchor (0.0, 1.0)
     zoom 0.7
 
+transform documents:
+    xalign 0.5
+    yalign 0.9
+    anchor (0.0, 1.0)
+    zoom 1.0
+
 transform fadein:
     alpha 0.0
     linear 1.0 alpha 1.0  # 1 second fade-in
@@ -153,6 +159,10 @@ transform fadein:
 #_backgrounds__ (make sure these files exist in /game/images/)
 image a                    = "images/a.jpg"
 image bg_gate              = "images/bg_gate.jpg"
+image exit_maingate        = "images/exit_maingate.jpg"
+image near_exit            = "images/near_exit.jpg"
+
+image library              = "images/lib1.jpg"
 image bg_after_school_gate = "images/after_school_gate.jpg"
 image bg_pub_lib_door      = "images/pub_lib_door.jpg"
 image bg_guard_house       = "images/guard_house.jpg"
@@ -250,6 +260,7 @@ image faculty_talking = "images/faculty_talking.png"
 
 image hideout_fireexit = "images/hideout_fireexit.jpg"
 image hideout_extension = "images/hideout_extension.jpg"
+image guardview         = "images/guard_view.jpg"
 
 # __GARDEN__ and __EXIT__ (make sure these files exist in /game/imgaes/)
 image bg_garden = "images/garden.jpg"
@@ -317,7 +328,7 @@ image hallway6 = "images/hallway6.jpg"
 image hallway7 = "images/hallway7.jpg"
 image hallway8 = "images/hallway8.jpg"
 image hallway9 = "images/hallway9.jpg"
-
+image adminoffice = "images/adminoffice.jpg"
 # Room 305 Scene
 image room307_1 = "images/room307_1.jpg"
 image room307_1 = "images/room307_1.jpg"
@@ -546,6 +557,8 @@ label before_main_menu:
 $ persistent.ui_theme = "dark"
 
 default persistent.ui_theme = "default"  # This saves the user's selected theme
+default greeted_guard = False
+default visited_hideout = False
 
 init python:
 
@@ -609,6 +622,7 @@ label start:
             jump skip_tutorial
 
 label tutorial:   
+
     voice "audio/carl/line3.MP3"
     show expression carl.get_image("suggesting") at center with dissolve
     cj "No worries! I'm here to guide you around."
@@ -689,33 +703,47 @@ label main_game:
     c "This is where the real story begins..."
     stop music fadeout 1.0
 
+    $ renpy.music.set_volume(0.1, channel="music")  # 30% volume
     play music "audio/bgmusicstart.mp3" loop
     scene bg_gate at custom_size_transform with fade
     # Lower BGM volume before voice
-    $ renpy.music.set_volume(0.1, channel="music")  # 30% volume
+    
 
     voice "audio/guard/line1.MP3"
     show expression justine.get_image("normal") at justine_bottom_left with dissolve
     jus "Grabe, hindi ako makapaniwala malapit narin akong makapagtapos sa paaralang ito."
     hide expression justine.get_image("normal") at justine_bottom_left with dissolve
+    # CHOICE MENU
 
-    voice "audio/guard/line2.MP3"
+    menu:
+        "Greet the Guard":
+            $ greeted_guard = True
+            jump guard_choice1
+        "Don't Greet the Guard":
+            $ greeted_guard = False
+            jump guard_choice2
+
+label guard_choice1:
+    play sound "audio/walking_sound.mp3"
+    scene guardview at custom_size_transform with fade
+    stop sound
     # The guard appears
-    show expression guard.get_image("normal") at kim_bottom_right
-    show expression guard.get_image("annoyed") at kim_bottom_right
+    show expression guard.get_image("normal") at right with dissolve
+    show expression guard.get_image("annoyed") at right
+    voice "audio/guard/line2.MP3"
     g "Good morning, iho. Asan yung I.D mo?"
-    hide expression guard.get_image("normal") at kim_bottom_right with dissolve
-    hide expression guard.get_image("annoyed") at kim_bottom_right with dissolve
+    hide expression guard.get_image("normal") at right with dissolve
+    hide expression guard.get_image("annoyed") at rright with dissolve
 
     voice "audio/guard/line3.MP3"
     show expression justine.get_image("talking") at justine_bottom_left
     jus "Sorry po kuya, naiwan ko po yung I.D ko."
     hide expression justine.get_image("talking") at justine_bottom_left
 
-    show expression guard.get_image("annoyed") at kim_bottom_right with dissolve
+    show expression guard.get_image("annoyed") at right with dissolve
     voice "audio/guard/line4.mp3"
     g "Ayy, pasensya na iho pero bawal kang pumasok pag wala kang I.D."
-    hide expression guard.get_image("annoyed") at kim_bottom_right with dissolve
+    hide expression guard.get_image("annoyed") at right with dissolve
     # CHOICE MENU -------------------------------------------------------------
     menu:
         "Bumalik na lang ako sa bahay":
@@ -733,7 +761,7 @@ label go_home:
     show expression guard.get_image("normal") at kim_bottom_right
     voice "audio/guard/choice1/line2.MP3"
     g "Sa susunod, siguraduhing may I.D ka ha."
-    hide expression guard.get_image("normal") at kim_bottom_right with dissolve
+    hide expression guard.get_image("normal") at right with dissolve
     show expression justine.get_image("talking") at justine_bottom_left
     $ renpy.pause(0.3)
     window hide
@@ -761,7 +789,10 @@ label call_kim:
     hide expression justine.get_image("talking") with dissolve
 
     show expression justine.get_image("holding_phone") at justine_bottom_left
+    play sound "audio/phone_calling.mp3"
     "Tumawag si Justine sa kanyang kaibigan…"
+    pause
+    stop sound
 
     voice "audio/guard/choice2/line2.mp3"
     jus "Hi Kim, nasaan ka ngayon?"
@@ -773,7 +804,6 @@ label call_kim:
     k "Nasa bahay te. Malamang"
     hide expression kim.get_image("calling") at right with dissolve
 
-    scene bg_gate at custom_size_transform with fade
     show expression justine.get_image("holding_phone") at justine_bottom_left
     voice "audio/guard/choice2/line4.mp3"
     jus "Gusto ko kasing mag-ikot sa school kaso naiwan ko I.D ko, pwde ka bang dumaan sa bahay? Kunin mo yung ID ko."
@@ -783,9 +813,16 @@ label call_kim:
     show expression kim.get_image("calling") at right with dissolve
     voice "audio/guard/choice2/line5.mp3"
     k "Ah okay, sakto may gagawin din naman ako sa school e"
+    play sound "audio/end_call.mp3"
+    pause
+    stop sound
     hide expression kim.get_image("calling") at right with dissolve
 
-    "Ilang minuto ang lumipas…"
+    scene black at custom_size_transform with fade
+    play sound "audio/tick_sound.mp3"
+    "A few minutes later"
+    pause
+    stop sound
     
     scene bg_gate at custom_size_transform with fade
 
@@ -802,28 +839,38 @@ label call_kim:
 
     voice "audio/guard/choice2/line8.mp3"
 
-    show expression guard.get_image("happy") at kim_bottom_right with dissolve
+    show expression guard.get_image("happy") at right with dissolve
     voice "audio/guard/choice2/line8.mp3"
     g "Hmm… sige, pwede na kayong pumasok."
-    hide expression guard.get_image("happy") with dissolve
-    hide expression justine.get_image("holding_phone") with dissolve
-    hide expression justine.get_image("talking") with dissolve
-    hide expression kim.get_image("normal") at kim_bottom_left with dissolve
-    hide expression justine.get_image("normal") with dissolve
-    hide expression justine.get_image("holding_id") with dissolve
+    hide expression guard.get_image("happy") 
+    hide expression justine.get_image("holding_phone") 
+    hide expression justine.get_image("talking") 
+    hide expression kim.get_image("normal") at kim_bottom_left 
+    hide expression justine.get_image("normal") 
+    hide expression justine.get_image("holding_id") 
 
     voice "audio/guard/choice2/line9.mp3"
-    show expression kim.get_image("smiling") at kim_bottom_center
-    show expression justine.get_image("smiling") at justine_bottom_center
+    show expression kim.get_image("smiling") at kim_bottom_center with dissolve
+    show expression justine.get_image("smiling") at justine_bottom_center with dissolve
     jus "Sige, salamat po"
-    hide expression kim.get_image("smiling") with dissolve
-    hide expression justine.get_image("smiling") with dissolve
+    hide expression kim.get_image("smiling") and justine.get_image("smiling") with dissolve
+
+    jump guard_choice2
+
+
+label guard_choice2:
+    play sound "audio/walking_sound.mp3"
     scene bg_guard_house at custom_size_transform with fade
-
-
+    scene bg_after_school_gate at custom_size_transform with fade
+    stop sound
+    show expression justine.get_image("normal") at justine_bottom_left
+    call screen nav_door_gate
+    return
 label hub_room:
+    play sound "audio/walking_sound.mp3"
     scene bg_after_school_gate at custom_size_transform with fade
     show expression justine.get_image("normal") at justine_bottom_left
+    stop sound
     call screen nav_door_gate
     return
 
@@ -877,6 +924,7 @@ label explore_new_building:
         show expression justine.get_image("normal") at justine_bottom_left
         jus "Hay... sana naman, pagbalik ko next sem, may progreso na."
     else:
+        play sound "audio/walking_sound.mp3" loop
         scene bg_nearing_new_building at custom_size_transform with fade
         pause 0.1
         scene bg_new_building1 at custom_size_transform with fade
@@ -891,6 +939,7 @@ label explore_new_building:
         pause 0.1
         scene bg_new_building6 at custom_size_transform with fade
         pause 0.1
+        stop sound
         show expression justine.get_image("talking") at justine_bottom_left with dissolve
         voice "audio/new_building/line4.mp3"
         jus "Gina-gawa parin hanggang ngayon."
@@ -900,13 +949,17 @@ label explore_new_building:
     jump callscreen
 
 label callscreen:
+    play sound "audio/walking_sound.mp3"
     scene bg_far_view_entrance at custom_size_transform with fade
+
+    stop sound
     call screen custom_choice_menu
     return
 
 label resting_ground:
+    play sound "audio/walking_sound.mp3"
     scene bg_tambayan_to_entrance at custom_size_transform with fade
-
+    stop sound
     voice "audio/resting/line1.mp3"
     show expression justine.get_image("happy") at justine_bottom_left
     jus "Ang tahimik dito ngayon ha."
@@ -914,7 +967,9 @@ label resting_ground:
     jump choicethree
 
 label choicethree:
+    play sound "audio/walking_sound.mp3"
     scene bg_tambayan_to_entrance at custom_size_transform with fade
+    stop sound
     call screen rest_choice_menu
     return
 
@@ -1001,63 +1056,52 @@ label huwag_bumili:
     jump choicethree
 
 label hideout:
-    scene bg_vendor_view at custom_size_transform with fade
-
-    show expression justine.get_image("laughing") at justine_bottom_left
-    voice "audio/hideout/line9.mp3"
-    jus "Solid netong tambayan na to! Sa dulo kaso sarado"
-    menu:
-        "Greet the Guard":
-            jump greet_guard
-        "Just walk away":
-            jump walk_away
-    pause
-
-label greet_guard:
+    $ visited_hideout = True
     scene bg_entering_hideout at custom_size_transform with fade
 
-    voice "audio/hideout/line1.mp3"
-    show expression justine.get_image("happy") at justine_bottom_left
-    jus "Oh eto yung hideout according sa boys"
+    if not greeted_guard:
+        scene bg_entering_hideout at custom_size_transform with fade
 
-    voice "audio/hideout/line2.mp3"
-    jus "Pero siguro ang pinaka-memorable kong time sa lugar na , is siguro yung nag open forum kami..."
+        voice "audio/hideout/line4.mp3"
+        show expression guard.get_image("annoyed") at kim_bottom_right with dissolve
+        g "oyy, oyy ano ginagawa mo dito?"
+        hide expression guard.get_image("annoyed") with dissolve
 
-    voice "audio/hideout/line3.mp3"
-    show expression justine.get_image("Sighing") at justine_bottom_left
-    jus "Hays, hindi ko parin makalimutan yung memory na yun, grabe ang awkward ng atmosphere"
-    hide expression justine.get_image("Sighing") with dissolve
-    jump choicethree
+        voice "audio/hideout/line5.mp3"
+        show expression justine.get_image("talking") at justine_bottom_left
+        jus "ahh, nag-iikot ikot lang po"
+        hide expression justine.get_image("talking") with dissolve
 
-label walk_away:
-    scene bg_entering_hideout at custom_size_transform with fade
+        voice "audio/hideout/line6.mp3"
+        show expression guard.get_image("angry") at kim_bottom_right
+        g "di mo ba alam na bawal pumasok dito ng walang paalam?!"
+        hide expression guard.get_image("angry") with dissolve
 
-    voice "audio/hideout/line4.mp3"
-    show expression guard.get_image("annoyed") at kim_bottom_right with dissolve
-    g "oyy, oyy ano ginagawa mo dito?"
-    hide expression guard.get_image("annoyed") with dissolve
+        voice "audio/hideout/line7.mp3"
+        show expression justine.get_image("scared") at justine_bottom_left
+        jus "sorry po kuya guard aalis na po ako…"
+        hide expression justine.get_image("scared") with dissolve
 
-    voice "audio/hideout/line5.mp3"
-    show expression justine.get_image("talking") at justine_bottom_left
-    jus "ahh, nag-iikot ikot lang po"
-    hide expression justine.get_image("talking") with dissolve
+        voice "audio/hideout/line8.mp3"
+        show expression guard.get_image("annoyed") at kim_bottom_right with dissolve
+        g "wag na mauulit to kung hindi i-re-report kita sa SAS"
+        hide expression guard.get_image("annoyed") with dissolve
+        jump choicethree
+        $ hideout_event = True   
+    else:
+        voice "audio/hideout/line1.mp3"
+        show expression justine.get_image("happy") at justine_bottom_left
+        jus "Oh eto yung hideout according sa boys"
 
-    voice "audio/hideout/line6.mp3"
-    show expression guard.get_image("angry") at kim_bottom_right
-    g "di mo ba alam na bawal pumasok dito ng walang paalam?!"
-    hide expression guard.get_image("angry") with dissolve
+        voice "audio/hideout/line2.mp3"
+        jus "Pero siguro ang pinaka-memorable kong time sa lugar na , is siguro yung nag open forum kami..."
 
-    voice "audio/hideout/line7.mp3"
-    show expression justine.get_image("scared") at justine_bottom_left
-    jus "sorry po kuya guard aalis na po ako…"
-    hide expression justine.get_image("scared") with dissolve
+        voice "audio/hideout/line3.mp3"
+        show expression justine.get_image("Sighing") at justine_bottom_left
+        jus "Hays, hindi ko parin makalimutan yung memory na yun, grabe ang awkward ng atmosphere"
+        hide expression justine.get_image("Sighing") with dissolve
 
-    voice "audio/hideout/line8.mp3"
-    show expression guard.get_image("annoyed") at kim_bottom_right with dissolve
-    g "wag na mauulit to kung hindi i-re-report kita sa SAS"
-    hide expression guard.get_image("annoyed") with dissolve
-    jump choicethree
-
+        jump choicethree
 
 ################################################################################
 #  ENTER BUILDING – Lobby hub
@@ -1074,7 +1118,9 @@ label enter_buildingcampus:
     jump inside_building
 
 label inside_building:
+    play sound "audio/walking_sound.mp3"
     scene bg_window1 at custom_size_transform with fade
+    stop sound
     call screen inside_choice_menu
     call screen information_desk
     return
@@ -1112,7 +1158,9 @@ label right_hall:
     hide expression justine.get_image("Sighing") with dissolve
 
 label floor1_right_hall:
+    play sound "audio/walking_sound.mp3"
     scene floor1_hallwayright at custom_size_transform with fade
+    stop sound
     call screen right_hall_menu
     return
 
@@ -1130,6 +1178,8 @@ label clinic_room:
     show expression justine.get_image("smiling") at justine_bottom_left
     voice "audio/clinic/line4.mp3"
     jus "Palagi niya akong tinatanong, 'Okay ka lang ba talaga? Nakakamiss toh talaga."
+    
+    play sound "audio/flashback.mp3"
     # Start of flashback sequence
     scene clinic1 at custom_size_transform with fade
     show expression nurse.get_image("normal") at right
@@ -1141,8 +1191,13 @@ label clinic_room:
     jus "Wala po ma'am, unting sakit lang ng ulo po."
     voice "audio/clinic/line7.mp3" 
     n "Wag mo kalimutan na alagaan ang sarili mo hijo."
+    pause
+    play sound "audio/flashback.mp3"
+    pause 0.5
+    stop sound 
+    with fade
     # End of flashback
-    scene clinic2 at custom_size_transform with fade
+    scene clinic2 at custom_size_transform 
     show expression justine.get_image("happy") at justine_bottom_left
     voice "audio/clinic/line8.mp3" 
     jus "Ang bait talaga ni ma'am. Sana makadalaw ako ulit dito."
@@ -1171,34 +1226,57 @@ label sas:
 return
 
 label right_hall_forward2:
+    play music "audio/bgmusicstart.mp3" loop
+    play sound "audio/walking_sound.mp3"
     scene bg_acad at custom_size_transform with fade
+    stop sound
     call screen right_hall_menu1
     return
 
 label show_documents:
     scene bg_acad at custom_size_transform
 
-    show doc1 with fade
-    show expression justine.get_image("happy") at justine_bottom_left  
+    window hide
+
     voice "audio/show_documents/line1.mp3"
-    "This is the QR Code where you can scan thru phone"
-    pause 1.0  # Added duration for pause
+    image doc1 = im.Scale("images/doc1.jpg", 920, 1200)    
+    show doc1 at truecenter with fade
+    show expression justine.get_image("happy") at justine_bottom_left 
+    play sound "audio/page_flip.mp3" 
+    pause
 
-    show doc2 with fade
+    play sound "audio/page_flip.mp3" 
     voice "audio/show_documents/line2.mp3"
-    "Here is the second request letter template"
-    pause 1.0
+    image doc2 = im.Scale("images/doc2.jpg", 920, 1200)    
+    show doc2 at truecenter with fade
+    show expression justine.get_image("happy") at justine_bottom_left
+    pause 
 
-    show doc3 with fade
+    play sound "audio/page_flip.mp3" 
     voice "audio/show_documents/line3.mp3"
-    "This is the third document for the campus reservation"
-    pause 1.0
+    image doc3 = im.Scale("images/doc3.jpg", 920, 1200)    
+    show doc3 at truecenter with fade
+    show expression justine.get_image("happy") at justine_bottom_left
+    pause
 
-    show doc4 with fade
+    play sound "audio/page_flip.mp3"    
     voice "audio/show_documents/line4.mp3"
-    "Lastly, this is the SINTA where you can do appointment"
-    pause 1.0
+    image doc4 = im.Scale("images/doc4.jpg", 920, 1200)    
+    show doc4 at truecenter with fade
+    show expression justine.get_image("happy") at justine_bottom_left
+    pause
+
+
     jump right_hall_forward2
+
+# Add this at the top or in an init block to define the style
+init python:
+    style.patrick_text = Style(style.default)
+    style.patrick_text.font = "patrickhand.ttf"  # Make sure this font file is in your /game directory
+    style.patrick_text.size = 44
+    style.patrick_text.color = "#3a2c0a"
+    style.patrick_text.bold = True
+    style.patrick_text.italic = True
 
 label director:
     scene bg_director at custom_size_transform with fade
@@ -1224,79 +1302,113 @@ label director:
     hide expression justine.get_image("laughing") with dissolve
     jump right_hall_forward2
 
+default visited_admin = False
 label admin:
-    scene adminoffice at custom_size_transform with fade
-    show expression justine.get_image("talking") at justine_bottom_left
-    voice "audio/admin/line1.mp3"
-    jus "Na-alala ko nung gumawa kami ng system para sa finals namin sa comprog pumunta kami dito para humingi ng permiso \nna mag-ikot sa campus at mag-picture"
+    if not visited_admin:
+        $ visited_admin = True
+        scene adminoffice at custom_size_transform with fade
+        show expression justine.get_image("talking") at justine_bottom_left
+        voice "audio/admin/line1.mp3"
+        jus "Na-alala ko nung gumawa kami ng system para sa finals namin sa comprog pumunta kami dito para humingi ng permiso \nna mag-ikot sa campus at mag-picture"
 
-    show expression justine.get_image("Sighing") at justine_bottom_left
-    voice "audio/admin/line2.mp3"
-    jus "naka-ilang balik kami dahil may proper procedure pala bago pumunta dito."
+        show expression justine.get_image("Sighing") at justine_bottom_left
+        voice "audio/admin/line2.mp3"
+        jus "naka-ilang balik kami dahil may proper procedure pala bago pumunta dito."
 
-    # Start of flashback sequence
-    scene lobbychairs at custom_size_transform with fade
-    show expression mae.get_image("talking") at left
-    show expression sophie.get_image("normal") at right
-    voice "audio/admin/line3.mp3"
-    m "Kaming dalawa nalang ni Sophie yung papasok sa loob para ipasa yung letter"
-    # 1st Attempt
-    scene bg_admin_office at custom_size_transform with fade
-    show expression mae.get_image("smiling") at left with dissolve
-    show expression sophie.get_image("smiling") at right with dissolve
-    "(Left the office after a few minutes)"
-    hide expression mae.get_image("smiling") with dissolve
-    hide expression sophie.get_image("smiling") with dissolve
-    scene lobbychairs at custom_size_transform with fade
+        play sound "audio/flashback.mp3"
+        # Start of flashback sequence
+        scene lobbychairs at custom_size_transform with fade
+        show expression mae.get_image("talking") at left
+        show expression sophie.get_image("normal") at right
+        voice "audio/admin/line3.mp3"
+        m "Kaming dalawa nalang ni Sophie yung papasok sa loob para ipasa yung letter"
+        # 1st Attempt
+        scene bg_admin_office at custom_size_transform with fade
+        show expression mae.get_image("smiling") at left with dissolve
+        show expression sophie.get_image("smiling") at right with dissolve
 
-    show expression sophie.get_image("talking") at right
-    voice "audio/admin/line4.mp3"
-    s "Guys ulitin daw mali raw yung format ng letter"
-    hide expression sophie.get_image("talking") with dissolve
+        scene black with fade
+        play sound "audio/tick_sound.mp3"
+        "(Left the office after a few minutes)"
+        stop sound
+        hide expression mae.get_image("smiling") with dissolve
+        hide expression sophie.get_image("smiling") with dissolve
+        scene lobbychairs at custom_size_transform with fade
 
-    show expression mae.get_image("talking") at left
-    voice "audio/admin/line5.mp3"
-    m "Ganito raw yung proper format"
-    show expression mae.get_image("holding_paper") at left
-    # 2nd Attempt
-    scene bg_admin_office at custom_size_transform with fade
-    show expression sophie.get_image("talking") at right
-    show expression mae.get_image("normal") at left
-    "Few minutes"
-    scene lobbychairs at custom_size_transform with fade
+        show expression sophie.get_image("talking") at right
+        voice "audio/admin/line4.mp3"
+        s "Guys ulitin daw mali raw yung format ng letter"
+        hide expression sophie.get_image("talking") with dissolve
 
-    show expression mae.get_image("talking") at left
-    voice "audio/admin/line6.mp3"
-    m "need naman daw ng appointment sa sinta"
-    # 3rd Attempt
-    scene bg_admin_office at custom_size_transform with fade
+        show expression mae.get_image("talking") at left
+        show expression mae.get_image("holding_paper") at left
+        voice "audio/admin/line5.mp3"
+        m "Ganito raw yung proper format"
+        
+        # 2nd Attempt
+        scene bg_admin_office at custom_size_transform 
+        show expression sophie.get_image("talking") at right
+        show expression mae.get_image("normal") at left
+        pause
+        
+        scene black with fade
+        play sound "audio/tick_sound.mp3"
+        "Few minutes"
+        stop sound
+        scene lobbychairs at custom_size_transform with fade
 
-    show expression sophie.get_image("talking") at right
-    voice "audio/admin/line7.mp3"
-    s "Manifesting ma-approve na to"
-    show expression mae.get_image("normal") at left
-    "After long long minutes"
+        show expression mae.get_image("talking") at left
+        voice "audio/admin/line6.mp3"
+        m "need naman daw ng appointment sa sinta"
+        # 3rd Attempt
+        scene bg_admin_office at custom_size_transform with fade
 
-    scene lobbychairs at custom_size_transform with fade
+        show expression sophie.get_image("talking") at right
+        voice "audio/admin/line7.mp3"
+        s "Manifesting ma-approve na to"
+        show expression mae.get_image("normal") at left
+        scene black with fade
+        play sound "audio/tick_sound.mp3"
+        "After long long minutes"
+        stop sound
 
-    show expression mae.get_image("talking") at right
-    voice "audio/admin/line8.mp3"
-    ma "Finally! na-approve na rin"
-    hide expression mae.get_image("talking") with dissolve
-    # End of Flashback
+        scene lobbychairs at custom_size_transform with fade
 
-    show expression justine.get_image("laughing") at justine_bottom_left
-    voice "audio/admin/line9.mp3"
-    jus "Haha... naaawa ako sa kanila"
-    hide expression justine.get_image("laughing") with dissolve
-    menu:
-        "knock and enter the admin office":
-            jump adm_office1
-        "Just enter the door":
-            jump adm_office2
-    jump right_hall_forward2
+        show expression mae.get_image("talking") at right
+        voice "audio/admin/line8.mp3"
+        ma "Finally! na-approve na rin"
+        hide expression mae.get_image("talking") with dissolve
+        scene black with fade
+
+        scene bg_admin_office at custom_size_transform  
+        play sound "audio/flashback.mp3"
+        pause 0.5
+        stop sound 
+        with fade
+        # End of Flashback
+        show expression justine.get_image("laughing") at justine_bottom_left
+        voice "audio/admin/line9.mp3"
+        jus "Haha... naaawa ako sa kanila"
+        
+        hide expression justine.get_image("laughing") with dissolve
+
+        jump right_hall_forward2
+    else:
+        menu:
+            "knock and enter the admin office":
+                jump adm_office1
+            "Just enter the door":
+                jump adm_office2
+        jump right_hall_forward2
 
 label adm_office1:
+    
+    scene adminoffice at custom_size_transform with fade
+    play sound "audio/door_knock.mp3"
+    pause
+    play sound "audio/door_open.mp3"
+    pause
+    play music "audio/office_ambience.mp3"
     scene bg_admin_office at custom_size_transform with fade
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/admin/line10.mp3"
@@ -1325,12 +1437,16 @@ label adm_office1:
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/admin/line16.mp3"
     jus "Maraming salamat po"
+    play sound "audio/door_open.mp3"
+    stop music 
     hide expression justine.get_image("talking") with dissolve
     hide expression vidal.get_image("talking") with dissolve
     jump right_hall_forward2
 
 label adm_office2:
+    play sound "audio/door_open.mp3"
     scene bg_admin_office at custom_size_transform with fade
+    pause
     show expression vidal.get_image("angry_talking") at right
     voice "audio/admin/line17.mp3"
     v "Sino ka at bakit ka pumapasok lang ng basta basta?"
@@ -1355,23 +1471,33 @@ label adm_office2:
     voice "audio/admin/line22.mp3"
     v "Labas!, marami pa kaming ginagawa at dadagdag ka pa!!!"
     scene adminoffice at custom_size_transform with fade
+    play sound "audio/door_slam.mp3"
     "Justine was forced out"
     hide expression vidal.get_image("angry_talking") with dissolve
     jump right_hall_forward2
 
 label mid:
+    play sound "audio/walking_sound.mp3"
     scene bg_midstair at custom_size_transform
+    stop sound
+
     
     
 
 label right_hall_forward3:
+    play music "audio/bgmusicstart.mp3" loop
+    play sound "audio/walking_sound.mp3"
     scene bg_midstair at custom_size_transform with fade
+    stop sound
     call screen right_hall_menu2
 
 label lgbt_cr:
+    play sound "audio/walking_sound.mp3"
     scene bg_lgbt3 at custom_size_transform with fade
     scene bg_lgbt2 at custom_size_transform with fade
     scene bg_lgbt1 at custom_size_transform with fade
+
+    stop sound
 
     show expression justine.get_image("normal") at justine_bottom_left
     show expression justine.get_image("talking") at justine_bottom_left
@@ -1387,177 +1513,201 @@ label lgbt_cr:
     jump lgbt_cr_menu
 
 label lgbt_cr_menu:
+    play sound "audio/walking_sound.mp3"
     scene bg_lgbt1 at custom_size_transform with fade
+    stop sound
     call screen lgbt_cr
 
 label back_garden:
-    scene g1 at custom_size_transform with fade
-    scene g2 at custom_size_transform with fade
-    show expression justine.get_image("normal") at justine_bottom_left
-    show expression justine.get_image("talking") at justine_bottom_left
-    voice "audio/garden/line1.mp3"
-    jus "Hmmmm, naaalala ko sa banda rito namin nilagay yung mga project na halaman noong first year kami"
-    hide expression justine.get_image("normal") with dissolve
-    hide expression justine.get_image("talking") with dissolve
+    play sound "audio/walking_sound.mp3"
+    pause
+    stop sound
+    if not greeted_guard and visited_hideout:
+        scene bg_garden3 at custom_size_transform 
+        scene g1 at custom_size_transform with fade
+        scene g2 at custom_size_transform with fade
+        show expression justine.get_image("normal") at justine_bottom_left
+        play music "audio/garden.mp3"
+        voice "audio/garden/line4.mp3"
+        jus "Hmmmm, naaalala ko banda rito namin nilagay yung mga project na halaman noong first year kami"
+        hide expression justine.get_image("normal") with dissolve
 
-    show expression guard.get_image("normal") at kim_bottom_right
-    show expression guard.get_image("talking_annoyed") at kim_bottom_right
-    voice "audio/garden/line2.mp3"
-    g "Oyyy oyy, bawal pumunta rito ng walang paalam"
-    hide expression guard.get_image("normal") with dissolve
-    hide expression guard.get_image("talking_annoyed") with dissolve
+        show expression guard.get_image("annoyed") at right
+        voice "audio/garden/line5.mp3"
+        g "Ang kulit mo ah! Diba sinabi ko na bawal dito?!"
+        hide expression guard.get_image("annoyed") with dissolve
 
-    
-    show expression justine.get_image("normal") at justine_bottom_left
-    show expression justine.get_image("talking") at justine_bottom_left
-    voice "audio/garden/line3.mp3"
-    jus "Ahhh sige po kuya, alis na lang ako"
-    hide expression justine.get_image("normal") with dissolve
-    hide expression justine.get_image("talking") with dissolve
-    jump right_hall_forward3
-    return
+        show expression justine.get_image("normal") at justine_bottom_left
+        voice "audio/garden/line6.mp3"
+        jus "Sorry po kuya, hindi na po mauulit"
+        hide expression justine.get_image("normal") with dissolve
+        show expression guard.get_image("annoyed") at right
+        voice "audio/garden/line7.mp3"
+        g "Talagang hindi na mau-ulit to"
+        voice "audio/garden/line8.mp3"
+        g "Dahil dadalhin na kita sa Admin Office"
+        hide expression guard.get_image("annoyed") with dissolve
 
-label back_garden_1:
-    scene g1 at custom_size_transform with fade
-    scene g2 at custom_size_transform with fade
-    scene g3 at custom_size_transform with fade
-    scene g4 at custom_size_transform with fade
-    scene g5 at custom_size_transform with fade
-    show expression justine.get_image("normal") at justine_bottom_left
-    voice "audio/garden/line4.mp3"
-    jus "Hmmmm, naaalala ko banda rito namin nilagay yung mga project na halaman noong first year kami"
-    hide expression justine.get_image("normal") with dissolve
+        show expression justine.get_image("normal") at justine_bottom_left
+        show expression justine.get_image("talking") at justine_bottom_left
+        voice "audio/garden/line9.mp3"
+        jus "Sorry po kuya, patawarin niyo na po ako, gusto ko lang naman pong mag-ikot"
+        hide expression justine.get_image("normal") with dissolve
+        hide expression justine.get_image("talking") with dissolve
 
-    show expression guard.get_image("annoyed") at right
-    voice "audio/garden/line5.mp3"
-    g "Ang kulit mo ah! Diba sinabi ko na bawal dito?!"
-    hide expression guard.get_image("annoyed") with dissolve
+        show expression guard.get_image("annoyed") at right
+        voice "audio/garden/line10.mp3"
+        g "Magpaliwanag ka nalang sa Admin Office"
+        hide expression guard.get_image("annoyed") with dissolve
+        stop music
 
-    show expression justine.get_image("normal") at justine_bottom_left
-    voice "audio/garden/line6.mp3"
-    jus "Sorry po kuya, hindi na po mauulit"
-    hide expression justine.get_image("normal") with dissolve
-    show expression guard.get_image("annoyed") at right
-    voice "audio/garden/line7.mp3"
-    g "Talagang hindi na mau-ulit to"
-    voice "audio/garden/line8.mp3"
-    g "Dahil dadalhin na kita sa Admin Office"
-    hide expression guard.get_image("annoyed") with dissolve
+        play sound "audio/tick_sound.mp3"
+        scene black with fade
+        "Few minutes later"
+        scene bg_admin_office at custom_size_transform with fade
+        stop sound
+        show expression guard.get_image("annoyed") at right
+        voice "audio/garden/admin/line1.mp3"
+        g "Good morning po Ma'am, irereklamo ko lang po ito. Paulit-ulit na kasi at hindi sumusunod"
+        voice "audio/garden/admin/line2.mp3"
+        g "Pumupunta sa mga lugar na hindi dapat puntahan ng walang permiso"
+        hide expression guard.get_image("annoyed") with dissolve
+        show expression vidal.get_image("normal") at right
+        show expression vidal.get_image("talking") at right
+        voice "audio/garden/admin/line3.mp3"
+        v "Ano pangalan, year at section mo iho?"
+        hide expression vidal.get_image("normal") with dissolve
+        hide expression vidal.get_image("talking") with dissolve
 
-    show expression justine.get_image("normal") at justine_bottom_left
-    show expression justine.get_image("talking") at justine_bottom_left
-    voice "audio/garden/line9.mp3"
-    jus "Sorry po kuya, patawarin niyo na po ako, gusto ko lang naman pong mag-ikot"
-    hide expression justine.get_image("normal") with dissolve
-    hide expression justine.get_image("talking") with dissolve
+        show expression justine.get_image("normal") at justine_bottom_left
+        show expression justine.get_image("talking") at justine_bottom_left
+        voice "audio/garden/admin/line4.mp3"
+        jus "Justine po from BSIT 4-1"
+        hide expression justine.get_image("normal") with dissolve
+        hide expression justine.get_image("talking") with dissolve
+        show expression vidal.get_image("normal") at right
+        show expression vidal.get_image("talking") at right
+        voice "audio/garden/admin/line5.mp3"
+        v "Okay Justine, is that true?"
+        hide expression vidal.get_image("normal") with dissolve
+        hide expression vidal.get_image("talking") with dissolve
+        show expression justine.get_image("normal") at justine_bottom_left
+        show expression justine.get_image("talking") at justine_bottom_left
+        voice "audio/garden/admin/line6.mp3"
+        jus "Pasensya po Ma'am. Gusto ko lang naman po mag-ikot"
+        
+        show expression vidal.get_image("normal") at right
+        show expression vidal.get_image("talking") at right
+        voice "audio/garden/admin/line7.mp3"
+        v "Dahil diyan magkakaroon ka ng punishment dahil sa hindi pagsunod at paglabag"
+        voice "audio/garden/admin/line8.mp3"
+        v "Kinakailangan mo na gawin ang mga dapat na i-utos o i-aassign sayong gawain"
+        voice "audio/garden/admin/line9.mp3"
+        v "Kailangan mo itong matapos at magawa kung hindi malalate ang pag-graduate mo"
+        hide expression vidal.get_image("normal") with dissolve
+        hide expression vidal.get_image("talking") with dissolve
 
-    show expression guard.get_image("annoyed") at right
-    voice "audio/garden/line10.mp3"
-    g "Magpaliwanag ka nalang sa Admin Office"
-    hide expression guard.get_image("annoyed") with dissolve
+        show expression justine.get_image("talking") at justine_bottom_left
+        show expression justine.get_image("Sighing") at justine_bottom_left
+        show expression justine.get_image("scared") at justine_bottom_left
+        voice "audio/garden/admin/line10.mp3"
+        jus "Pero po Ma'am...."
+        hide expression justine.get_image("talking") 
+        hide expression justine.get_image("Sighing")
+        hide expression justine.get_image("scared") with dissolve
 
-    scene bg_admin_office at custom_size_transform with fade
-    show expression guard.get_image("annoyed") at right
-    voice "audio/garden/admin/line1.mp3"
-    g "Good morning po Ma'am, irereklamo ko lang po ito. Paulit-ulit na kasi at hindi sumusunod"
-    voice "audio/garden/admin/line2.mp3"
-    g "Pumupunta sa mga lugar na hindi dapat puntahan ng walang permiso"
-    hide expression guard.get_image("annoyed") with dissolve
-    show expression vidal.get_image("normal") at right
-    show expression vidal.get_image("talking") at right
-    voice "audio/garden/admin/line3.mp3"
-    v "Ano pangalan, year at section mo iho?"
-    hide expression vidal.get_image("normal") with dissolve
-    hide expression vidal.get_image("talking") with dissolve
+        show expression vidal.get_image("normal") at right
+        show expression vidal.get_image("angry") at right
+        show expression vidal.get_image("angry_talking") at right
+        voice "audio/garden/admin/line11.mp3"
+        v "No more buts, you may go now"
+        hide expression vidal.get_image("normal") 
+        hide expression vidal.get_image("angry") 
+        hide expression vidal.get_image("angry_talking") with dissolve
 
-    show expression justine.get_image("normal") at justine_bottom_left
-    show expression justine.get_image("talking") at justine_bottom_left
-    voice "audio/garden/admin/line4.mp3"
-    jus "Justine po from BSIT 4-1"
-    hide expression justine.get_image("normal") with dissolve
-    hide expression justine.get_image("talking") with dissolve
-    show expression vidal.get_image("normal") at right
-    show expression vidal.get_image("talking") at right
-    voice "audio/garden/admin/line5.mp3"
-    v "Okay Justine, is that true?"
-    hide expression vidal.get_image("normal") with dissolve
-    hide expression vidal.get_image("talking") with dissolve
-    show expression justine.get_image("normal") at justine_bottom_left
-    show expression justine.get_image("talking") at justine_bottom_left
-    voice "audio/garden/admin/line6.mp3"
-    jus "Pasensya po Ma'am. Gusto ko lang naman po mag-ikot"
-    
-    show expression vidal.get_image("normal") at right
-    show expression vidal.get_image("talking") at right
-    voice "audio/garden/admin/line7.mp3"
-    v "Dahil diyan magkakaroon ka ng punishment dahil sa hindi pagsunod at paglabag"
-    voice "audio/garden/admin/line8.mp3"
-    v "Kinakailangan mo na gawin ang mga dapat na i-utos o i-aassign sayong gawain"
-    voice "audio/garden/admin/line9.mp3"
-    v "Kailangan mo itong matapos at magawa kung hindi malalate ang pag-graduate mo"
-    hide expression vidal.get_image("normal") with dissolve
-    hide expression vidal.get_image("talking") with dissolve
+        "THE END"
 
-    show expression justine.get_image("talking") at justine_bottom_left
-    show expression justine.get_image("Sighing") at justine_bottom_left
-    show expression justine.get_image("scared") at justine_bottom_left
-    voice "audio/garden/admin/line10.mp3"
-    jus "Pero po Ma'am...."
-    hide expression justine.get_image("talking") 
-    hide expression justine.get_image("Sighing")
-    hide expression justine.get_image("scared") with dissolve
+        return
+    else:
+        play sound "audio/walking_sound.mp3"
+        scene bg_garden3 at custom_size_transform 
+        scene g1 at custom_size_transform with fade
+        scene g2 at custom_size_transform with fade
+        stop sound
+        play music "audio/garden.mp3"
+        show expression justine.get_image("normal") at justine_bottom_left
+        show expression justine.get_image("talking") at justine_bottom_left
+        voice "audio/garden/line1.mp3"
+        jus "Hmmmm, naaalala ko sa banda rito namin nilagay yung mga project na halaman noong first year kami"
+        hide expression justine.get_image("normal") with dissolve
+        hide expression justine.get_image("talking") with dissolve
 
-    show expression vidal.get_image("normal") at right
-    show expression vidal.get_image("angry") at right
-    show expression vidal.get_image("angry_talking") at right
-    voice "audio/garden/admin/line11.mp3"
-    v "No more buts, you may go now"
-    hide expression vidal.get_image("normal") 
-    hide expression vidal.get_image("angry") 
-    hide expression vidal.get_image("angry_talking") with dissolve
+        show expression guard.get_image("normal") at kim_bottom_right
+        show expression guard.get_image("talking_annoyed") at kim_bottom_right
+        voice "audio/garden/line2.mp3"
+        g "Oyyy oyy, bawal pumunta rito ng walang paalam"
+        hide expression guard.get_image("normal") with dissolve
+        hide expression guard.get_image("talking_annoyed") with dissolve
 
-    "THE END"
+        show expression justine.get_image("normal") at justine_bottom_left
+        show expression justine.get_image("talking") at justine_bottom_left
+        voice "audio/garden/line3.mp3"
+        jus "Ahhh sige po kuya, alis na lang ako"
+        hide expression justine.get_image("normal") with dissolve
+        hide expression justine.get_image("talking") with dissolve
+        stop music
+        jump right_hall_forward3
 
-    jump right_hall_forward2
-
-
-label garden_1:
-    scene bg_garden at custom_size_transform with fade
     
 label garden_view_menu:
+    play sound "audio/walking_sound.mp3"
     scene bg_garden at custom_size_transform with fade
+    stop sound
     call screen garden_view
 
-label garden_view_menu1:
-    scene bg_garden1 at custom_size_transform with fade
-    call screen cat
-
-label garden_view2:
+label garden_view1:
+    play sound "audio/walking_sound.mp3"
     scene bg_garden2 at custom_size_transform with fade
-    pause 1.0
+    pause 0.1
     scene bg_garden3 at custom_size_transform with fade
-    pause 1.0
+    pause 0.1
+    stop sound
          
-    jump back_garden_view
+    jump back
+label garden_view2:
+    play sound "audio/walking_sound.mp3"
+    scene bg_garden1 at custom_size_transform with fade
+    pause 0.1
+    scene bg_garden2 at custom_size_transform with fade
+    pause 0.1
+    scene bg_garden3 at custom_size_transform with fade
+    pause 0.1
+    stop sound
+         
+    jump back
+    
+label back:
+    play sound "audio/walking_sound.mp3"
+    scene bg_garden3 at custom_size_transform
+    stop sound
+    call screen back_garden
 
-label back_garden_view:
-    scene bg_garden3 at custom_size_transform 
-    menu:
-        "Back Garden and Greet the Guard":
-            jump back_garden
-        "Back Garden and Didn't Greet the GUard":
-            jump back_garden_1
+
 
 label g:
+    play sound "audio/walking_sound.mp3"
     scene g12 at custom_size_transform with dissolve
+    stop sound
     call screen entrance_hideout
 
 label right_exit:
+    play sound "audio/walking_sound.mp3"
     scene bg_exit1 at custom_size_transform with fade
     scene bg_exit2 at custom_size_transform with fade
     scene bg_exit3 at custom_size_transform with fade
     scene bg_exit4 at custom_size_transform with fade
     scene bg_exit5 at custom_size_transform with fade
+    stop sound
     show expression justine.get_image("normal") at justine_bottom_left
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/right_exit/line1.mp3"
@@ -1583,69 +1733,95 @@ label pet_cat:
     jump right_exit_menu
 
 label donotpet:
+    play sound "audio/walking_sound.mp3"
     scene bg_exit5 at custom_size_transform with fade
+    stop sound
     jump right_exit_menu
 
-label maingate:
-    scene bg_after_school_gate at custom_size_transform with fade
-    show expression justine.get_image("normal") at justine_bottom_left
-    show expression justine.get_image("laughing") at justine_bottom_left
-    voice "audio/roofdeck/line10.mp3"
-    jus "ang daming ko naging memorya dito may maganda pero may mga part na gusto ko din kalimutan pero masasabi ko \ntalaga na ma mi-miss ko talaga to sa susunod ulit sintang paaralan"
-    "THE END"
-    jump outside_exit_menu
-
 label right_exit_menu:
+    play sound "audio/walking_sound.mp3"
     scene bg_exit6 at custom_size_transform with fade
-    pause 1.0
     scene bg_exit7 at custom_size_transform with fade
+    stop sound
     call screen right_exit_menu1
 
 label outside_exit:
+    play sound "audio/walking_sound.mp3"
     scene bg_exit8 at custom_size_transform with fade
     pause 1.0
     scene bg_exit9 at custom_size_transform with fade
     pause 1.0
     scene bg_exit10 at custom_size_transform with fade
-    pause 1.0
+    stop sound
+    menu:
+        "Go Outside the Main Gate":
+            jump maingate_ending
+        "Just go back":
+            jump outside_exit_menu
     jump outside_exit_menu
 
+label maingate_ending:
+    play sound "audio/walking_sound.mp3"
+    scene near_exit at custom_size_transform with fade
+    scene exit_maingate at custom_size_transform with fade
+    scene bg_gate at custom_size_transform with fade
+    stop sound
+    show expression justine.get_image("talking") at justine_bottom_left
+    voice "audio/roofdeck/line10.mp3"
+    jus "Ang dami kong naging memorya dito, may maganda pero may mga part na gusto ko din kalimutan, pero masasabi ko \ntalaga na mami-miss ko talaga 'to sa susunod ulit sintang paaralan."
+
+    "THE END"
+    return
+
+
 label fire_exit_inside1:
+    play sound "audio/walking_sound.mp3"
     scene bg_fire_exit_inside1 at custom_size_transform with fade
     scene bg_fire_exit_inside2 at custom_size_transform with fade
     scene bg_fire_exit_inside3 at custom_size_transform with fade
     scene bg_fire_exit_inside4 at custom_size_transform with fade
     scene bg_fire_exit_inside5 at custom_size_transform with fade
-
+    stop sound
+    jump fire_exit_inside_menu
 label fire_exit_inside_menu:
+    play sound "audio/walking_sound.mp3"
     scene bg_fire_exit_inside5 at custom_size_transform with fade
+    stop sound
     call screen fire_exit_inside_menu1
 
 label outside_exit_menu:
+    play sound "audio/walking_sound.mp3"
     scene bg_after_school_gate at custom_size_transform with fade
+    stop sound
     call screen nav_door_gate
 
 label upstairs:
+    play sound "audio/walking_sound.mp3"
     scene bg_stair1 at custom_size_transform with fade
     pause 1.0
     scene bg_stair2 at custom_size_transform with fade
     pause 1.0
     scene bg_stair3 at custom_size_transform with fade
+    stop sound
 
     jump second_floor_stair
 
 label second_floor_stair:
+    play sound "audio/walking_sound.mp3"
     scene bg_stair4 at custom_size_transform with fade
     scene bg_stair5 at custom_size_transform with fade
+    stop sound
     jump second_floor_menu
 
 
 label male_bathroom1:
+    play sound "audio/walking_sound.mp3"
     scene m1 at custom_size_transform with fade
     scene m2 at custom_size_transform with fade
     scene m3 at custom_size_transform with fade
     scene m4 at custom_size_transform with fade
     scene m5 at custom_size_transform with fade
+    stop sound
     call screen male_bathroom
     return
 
@@ -1659,6 +1835,8 @@ label fire_exit:
         jus "Na-aalala ko rito lagi pumupunta si Mae. Tuwing nag-aantay kami sa last subject"
         hide expression justine.get_image("talking") with dissolve
         hide expression justine.get_image("happy") with dissolve
+
+        play sound "audio/flashback.mp3"
         # Start of Flashback Scene____
         scene fire_exit1 at custom_size_transform with fade
         show expression mae.get_image("smiling") at kim_bottom_right
@@ -1669,7 +1847,9 @@ label fire_exit:
         m "nakaka relax pwede ka mag emote dito oh"
         hide expression mae.get_image("smiling") with dissolve
         hide expression mae.get_image("talking") with dissolve
+        play sound "audio/flashback.mp3"
         # End of Flashback
+        jump second_floor_menu
     else:
         # IRL
         show expression justine.get_image("smiling") at justine_bottom_left
@@ -1686,21 +1866,27 @@ label fire_exit:
 
 default visited_fire_exit = False
 label second_floor_menu:
+    play sound "audio/walking_sound.mp3"
     scene bg_floor2_halfwayright at custom_size_transform with fade
+    stop sound
     call screen right_hall_menu3
 
 label floor2_1:
+    play sound "audio/walking_sound.mp3"
     scene sf1 at custom_size_transform with fade
     scene sf2 at custom_size_transform with fade
     scene sf3 at custom_size_transform with fade
     scene sf4 at custom_size_transform with fade
     scene sf5 at custom_size_transform with fade
     scene sf6 at custom_size_transform with fade
+    stop sound
     call screen room
     return
 
 label floor2_2:
+    play sound "audio/walking_sound.mp3"
     scene sf6 at custom_size_transform with fade
+    stop sound 
     call screen room
     return
 
@@ -1718,6 +1904,8 @@ label room_204:
         show expression justine.get_image("laughing") at justine_bottom_left
         hide expression justine.get_image("happy") with dissolve
         hide expression justine.get_image("talking") with dissolve
+
+        play sound "audio/flashback.mp3"
         # Start of the Flashback
         scene chair1 at custom_size_transform with fade
         show expression carl.get_image("suggesting") at right
@@ -1726,6 +1914,7 @@ label room_204:
         show expression carl.get_image("talking") at right
         hide expression carl.get_image("suggesting") with dissolve
         hide expression carl.get_image("talking") with dissolve
+        play sound "audio/flashback.mp3"
         # End of Flashback
     else:
         # IRL
@@ -1739,7 +1928,9 @@ label room_204:
 
 default visited_room_204 = False
 label floor2_3:
+    play sound "audio/walking_sound.mp3"
     scene sf7 at custom_size_transform with fade
+    stop sound
     call screen pup
     return
 
@@ -1747,7 +1938,8 @@ default visited_pup_library = False
 label pup_library:
     if not visited_pup_library:
         $ visited_pup_library = True
-        scene library1 at custom_size_transform with fade
+        play music "audio/library.mp3"
+        scene library at custom_size_transform with fade
         show expression justine.get_image("talking") at justine_bottom_left with dissolve
         voice "audio/pup/line1.mp3"
         jus "Dito sa library na 'to. Naaalala ko lagi kaming nag-tatambay dito, pag may vacant time o kaya kapag nags-study kami rito"
@@ -1758,16 +1950,20 @@ label pup_library:
         jus "na alala ko tuloy yung sinabi ni Sophie"
         hide expression justine.get_image("talking") with dissolve
         hide expression justine.get_image("happy") with dissolve
+
+        play sound "audio/flashback.mp3"
         # Start of the Flashbacks
         scene library1 at custom_size_transform with fade
-        show expression sophie.get_image("smiling") at kim_bottom_right
+        show expression sophie.get_image("smiling") at right
+        show expression sophie.get_image("talking") at right
         voice "audio/pup/line3.mp3"
-        jus "At ang sobrang lamig sa room nato dahil may aircon kaya ang maganda tambayan. Lalo na kung sa room namin pag ka-klase \nang init-init kaya after ng class namin dito agad kami pupunta sa library."
-        show expression sophie.get_image("talking") at kim_bottom_right
+        s "At ang sobrang lamig sa room nato dahil may aircon kaya ang maganda tambayan. Lalo na kung sa room namin pag ka-klase \nang init-init kaya after ng class namin dito agad kami pupunta sa library."
         hide expression sophie.get_image("smiling") with dissolve
         hide expression sophie.get_image("talking") with dissolve
+        play sound "audio/flashback.mp3"
         # End of flashback
 
+        scene library at custom_size_transform with fade
         show expression justine.get_image("happy") at justine_bottom_left
         voice "audio/pup/line4.mp3"
         jus "well, totoo naman malamig dito"
@@ -1777,6 +1973,7 @@ label pup_library:
         jus "at pwede ka din humiram ng libro para pang palipas oras din"
         hide expression justine.get_image("happy") with dissolve
         hide expression justine.get_image("talking") with dissolve
+        stop music
         jump floor2_3
     else:
         scene library2 at custom_size_transform with fade
@@ -1791,6 +1988,7 @@ label pup_library:
     # Note: 'jump floor2_3' was moved before 'return' in the original to avoid unreachable code; kept as 'return' here per your input
 
 label floor_1:
+    play sound "audio/walking_sound.mp3"
     scene sf7 at custom_size_transform with fade
     scene sf8 at custom_size_transform with fade
     scene sf9 at custom_size_transform with fade
@@ -1798,6 +1996,7 @@ label floor_1:
     scene sf11 at custom_size_transform with fade
     scene sf12 at custom_size_transform with fade
     scene sf13 at custom_size_transform with fade
+    stop sound
     call screen discussion
     return
 
@@ -1813,33 +2012,46 @@ label discussion_room:
     jump floor_2
 
 label floor_2:
+    play sound "audio/walking_sound.mp3"
     scene sf13 at custom_size_transform with fade
+    stop sound
     call screen discussion
     return
 
 label floor__1:
+    play sound "audio/walking_sound.mp3"
     scene sf14 at custom_size_transform with fade
     scene sf15 at custom_size_transform with fade
     scene sf16 at custom_size_transform with fade
     scene sf17 at custom_size_transform with fade
+    stop sound
     call screen second_last_floor
     return
 
 label floor__2:
+    play sound "audio/walking_sound.mp3"
     scene sf17 at custom_size_transform with fade
+    stop sound
     call screen second_last_floor
     return
 
+
 label second_floor:
+    play sound "audio/walking_sound.mp3"
     scene bg_second_floor at custom_size_transform
+    stop sound
     call screen second_floor_menu
 
 label halfwayground:
+    play sound "audio/walking_sound.mp3"
     scene left_halfway_ground1 at custom_size_transform with fade
+    stop sound
     call screen left_halfway_menu
 
 label nstp:
+    play sound "audio/walking_sound.mp3"
     scene nstp at custom_size_transform with fade
+    stop sound
     call screen nstp_room
     return
 
@@ -1887,28 +2099,38 @@ label faculty_lounge:
 default visited_girls_cr = False
 
 label left_ground1:
+    play sound "audio/walking_sound.mp3"
     scene left_halfway_ground1 at custom_size_transform with fade
     scene left_halfway_ground2 at custom_size_transform with fade
+    stop sound
     call screen left_ground_menu1
 
 label left_ground_1:
+    play sound "audio/walking_sound.mp3"
     scene left_halfway_ground2 at custom_size_transform with fade
+
+    stop sound
     call screen left_ground_menu1
     return
 
 label left_ground2:
+    play sound "audio/walking_sound.mp3"
     scene left_halfway_ground3 at custom_size_transform with fade
     scene left_halfway_ground4 at custom_size_transform with fade
     scene left_halfway_ground5 at custom_size_transform with fade
+    stop sound
     call screen left_ground_menu2
     return
 
 label left_ground_2:
+    play sound "audio/walking_sound.mp3"
     scene left_halfway_ground5 at custom_size_transform with fade
+    stop sound
     call screen left_ground_menu2
     return
 
 label avr_room:
+    play sound "audio/door_open.mp3"
     scene avr1 at custom_size_transform with fade
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/avr/line1.mp3"
@@ -1931,32 +2153,42 @@ label avr_room:
     jump left_ground_3
 
 label left_ground3:
+    play sound "audio/walking_sound.mp3"
     scene left_halfway_ground6 at custom_size_transform with fade
     scene left_halfway_ground7 at custom_size_transform with fade
+    stop sound
     call screen left_ground_menu3
     return
 
 label left_ground_3:
+    play sound "audio/walking_sound.mp3"
     scene left_halfway_ground7 at custom_size_transform with fade
+    stop sound
     call screen left_ground_menu3
     return
 
 label third1:
+    play sound "audio/walking_sound.mp3"
     scene stair1 at custom_size_transform with fade
     scene stair2 at custom_size_transform with fade
     scene stair3 at custom_size_transform with fade
     scene stair4 at custom_size_transform with fade
     scene stair5 at custom_size_transform with fade
+    stop sound
     call screen third_floor1
     return
 
 label third1_1:
+    play sound "audio/walking_sound.mp3"
     scene stair5 at custom_size_transform with fade
+    stop sound
     call screen third_floor1
     return
 
 label thirdfloor_hall:
+    play sound "audio/walking_sound.mp3"
     scene hallway1 at custom_size_transform with fade
+    stop sound
 
 default visited_room_302 = False
 label room_302:
@@ -1970,6 +2202,7 @@ label room_302:
         hide expression justine.get_image("talking") with dissolve
         hide expression justine.get_image("laughing") with dissolve
 
+        play sound "audio/flashback.mp3"
         # Start of the Flashback
         scene room1 at custom_size_transform with fade
         show expression kim.get_image("calling") at kim_bottom_right with dissolve
@@ -1980,19 +2213,25 @@ label room_302:
         voice "audio/room_302/line4.mp3"
         jus "Nasa room 303 po"
         hide expression justine.get_image("holding_phone") with dissolve
+
+        scene black with fade
+        play sound "audio/tick_sound.mp3"
         "(After a few minutes, Kim entered the room a bit irritated)"
+        stop sound
 
         show expression carl.get_image("talking") at justine_bottom_left
-    
         c "Ay… room 303 kase nakalagay sa table eh"
         hide expression carl.get_image("talking") with dissolve
 
+        show expression kim.get_image("normal") at right with dissolve
         show expression kim.get_image("talking") at kim_bottom_right
         voice "audio/room_302/line6.mp3"
         k "Pagsilip ko sa room 303 te ibang estudyante nakita ko tas nakatitigan ko pa. Nakakahiya.."
         show expression kim.get_image("normal") at kim_bottom_right
         hide expression kim.get_image("talking") with dissolve
         hide expression kim.get_image("normal") with dissolve
+        play sound "audio/flashback.mp3"
+        # End of the Flashback
         jump turn_right_4
     else:
         scene room2 at custom_size_transform with fade
@@ -2042,8 +2281,11 @@ label room_305:
     jump turn_right_2
 
 label peek_window:
+    stop music 
     scene peak_window at custom_size_transform with fade
+    play sound "audio/open_window.mp3"
     "Justine looks through the glass window in the door"
+    
     show expression justine.get_image("talking") at justine_bottom_left
     voice "audio/room_305/line7.mp3"
     jus "Parang hindi na siya kasing gulo gaya nung dati"
@@ -2054,6 +2296,7 @@ label peek_window:
     hide expression mae.get_image("talking") with dissolve
     jump turn_right_2
 
+ 
 label walk_away1:
     scene hallway3 at custom_size_transform with fade
     "Justine smiles faintly and continues walking down the hallway."
@@ -2075,6 +2318,8 @@ label walk_away1:
     jump turn_right_2
 
 label room_307:
+    play sound "audio/door_open.mp3"
+    scene black with fade
     "(Justine entered the Room 307)"
     scene room307_1 at custom_size_transform with fade
     show expression justine.get_image("talking") at justine_bottom_left
@@ -2096,21 +2341,24 @@ label room_307:
     jump turn_right_1
 
 label turn_right_2:
+    play sound "audio/walking_sound.mp3"
     scene hallway3 at custom_size_transform with fade
+    stop sound
     call screen third_floor3
     return
 
 label boys_cr:
+    play sound "audio/walking_sound.mp3"
     scene m1 at custom_size_transform with fade
+    stop sound
     pause
     "(Justine entered the Boys' CR)"
+    play sound "audio/walking_sound.mp3"
     scene m2 at custom_size_transform with fade
-    pause
     scene m3 at custom_size_transform with fade
-    pause
     scene m4 at custom_size_transform with fade
-    pause
     scene m5 at custom_size_transform with fade
+    stop sound
 
     show expression justine.get_image("scared") at justine_bottom_left
     voice "audio/boys/line1.mp3"
@@ -2129,11 +2377,16 @@ label boys_cr:
 
 return
 label turn_right:
+    play sound "audio/walking_sound.mp3"
     scene hallway1 at custom_size_transform with fade
     scene hallway2 at custom_size_transform with fade
+    stop sound
 
 label turn_right_1:
+    play sound "audio/walking_sound.mp3"
     scene hallway2 at custom_size_transform with fade
+
+    stop sound
     call screen third_floor2
     return
 
@@ -2228,68 +2481,88 @@ label girls_cr:
     jump third1_1
 
 label turn_right1:
+    play sound "audio/walking_sound.mp3"
     scene hallway4 at custom_size_transform with fade
+    pause
     scene hallway5 at custom_size_transform with fade
+    stop sound
     call screen third_floor6
     return
 
 label turn_right_3:
+    play sound "audio/walking_sound.mp3"
     scene hallway5 at custom_size_transform with fade
+    stop sound
     call screen third_floor6
     return
 
 label turn_right_4:
+    play sound "audio/walking_sound.mp3"
     scene hallway6 at custom_size_transform with fade
+    stop sound
     call screen third_floor4
     return
 
 label turn_right5:
+    play sound "audio/walking_sound.mp3"
     scene hallway7 at custom_size_transform with fade
     scene hallway8 at custom_size_transform with fade
     scene hallway9 at custom_size_transform with fade
+    stop sound
     call screen third_floor5
     return
 
 label turn_right_5:
+    play sound "audio/walking_sound.mp3"
     scene hallway9 at custom_size_transform with fade
+    stop sound
     call screen third_floor5
 
 label science_lab:
     scene science_lab at custom_size_transform with fade
-    show expression justine.get_image("alarmed") at justine_bottom_left
-    jus "" 
+    show expression justine.get_image("alarmed") at justine_bottom_left with dissolve
     call screen science_lab1
     return
 
 
 label turn_left:
+    play sound "audio/walking_sound.mp3"
     scene rightside_staircase at custom_size_transform with fade
+    stop sound
     call screen turn_left_1
     return
 
 label fourth_floor:
+    play sound "audio/walking_sound.mp3"
     scene 1 at custom_size_transform with fade
     scene 2 at custom_size_transform with fade
     scene 3 at custom_size_transform with fade
+    stop sound
     call screen fourth_floor1
     return
 
 label fourth_floor_1:
+    play sound "audio/walking_sound.mp3"
     scene 3 at custom_size_transform with fade
+    stop sound
     call screen fourth_floor1
     return
 
 label m_bathroom:
+    play sound "audio/walking_sound.mp3"
     scene m1 at custom_size_transform with fade
     scene m2 at custom_size_transform with fade
     scene m3 at custom_size_transform with fade
     scene m4 at custom_size_transform with fade
     scene m5 at custom_size_transform with fade
+    stop sound
     call screen ma_bathroom
     return
 
 label fourth_floors1:
+    play sound "audio/walking_sound.mp3"
     scene f1 at custom_size_transform with fade
+    stop sound
     call screen fourth
     return
 
@@ -2418,7 +2691,7 @@ label food_beverage:
         jus "feel ko ang intense ng training nila dyan"
         hide expression justine.get_image("talking") with dissolve
 
-    jump fourth_floors3
+    jump fourth_floors4_1
 
 default visited_kitchen_lab = False
 label kitchen_lab:
@@ -2475,7 +2748,7 @@ label HM_storage:
     jus "Pag nakikita ko nga silang may dalang lutong pagkain ay naiinggit ako kase akala ko dati puro lang sila linis yung parang \nmga House keeping yun pala may halong pagkain din"
     hide expression justine.get_image("happy") with dissolve
 
-    jump fourth_floors4
+    jump fourth_floors4_1
 
 label student_org:
     if not visited_org:
@@ -2496,7 +2769,7 @@ label student_org:
         jus "grabe, ang strict talaga ng school na ito"
         hide expression justine.get_image("talking") with dissolve
 
-    jump fourth_floors4
+    jump fourth_floors4_1
 
 label housekeeping_room:
     if not visited_housekeeping_room:
@@ -2549,7 +2822,7 @@ label housekeeping_room:
         voice "audio/housekeeping/line14.mp3"
         jus "Oo nga, makes sense yung sinabi ni Mae..."
         hide expression justine.get_image("talking") with dissolve
-    jump fourth_floors5
+    jump fourth_floors4_1
 
 
 
@@ -2574,28 +2847,38 @@ label door_open:
     jump fourth_floors5
 
 label fourth_floors2:
+    play sound "audio/walking_sound.mp3"
     scene f2 at custom_size_transform with fade
+    stop sound
     call screen fourth1
     return
 
 label fourth_floors3:
+    play sound "audio/walking_sound.mp3"
     scene f3 at custom_size_transform with fade
+    stop sound
     call screen fourth2
     return
 
 
 label fourth_floors4_1:
+    play sound "audio/walking_sound.mp3"
     scene f5 at custom_size_transform with fade
+    stop sound
     call screen fourth3
     return
 
 label fourth_floors5:
+    play sound "audio/walking_sound.mp3"
     scene f6 at custom_size_transform with fade
+    stop sound
     call screen fourth4
     return
 
 label fourth_floors6:
+    play sound "audio/walking_sound.mp3"
     scene f7 at custom_size_transform with fade
+    stop sound
     call screen fourth5
     return
 
@@ -2647,13 +2930,14 @@ label csc:
         hide expression sophie.get_image("smiling") with dissolve
         # End Flashback
         scene csc_room2 at custom_size_transform with fade
+        jump fourth_floors5
     else:
         scene csc_room1 at custom_size_transform with fade
         voice "audio/csc/line14.mp3"
         show expression justine.get_image("talking") at justine_bottom_left
         jus "So, dito ginagawa ang lahat ng desisyon ng CSC"
         hide expression justine.get_image("talking") with dissolve
-    jump fourth_floors5
+        jump fourth_floors5
 
 
 
@@ -2707,7 +2991,7 @@ label deluxe_room:
         voice "audio/deluxe/line12.mp3"
         jus "High-end training space pala talaga. May pagka-exclusive… pero inspiring rin."
         hide expression justine.get_image("happy") with dissolve
-    jump fourth_floors6
+    jump fourth_floors5
 
 label floor1_2:
     scene sf17 at custom_size_transform with fade
@@ -2761,7 +3045,7 @@ label travel_tours:
         voice "audio/travel_tours/line9.mp3"
         jus "Kaya pala sobrang themed sa loob. May mapa pa ng buong mundo sa pader"
         hide expression justine.get_image("talking") with dissolve
-    jump fourth_floors4
+    jump fourth_floors3
 
 
 label frontofficetravel_tours:
@@ -2773,8 +3057,11 @@ label frontofficetravel_tours:
     jus "O kaya naman dito ina-asikaso yung mga flight ng ibang studyante kapag ilalaban sila sa ibang bansa. Nung 1st year kase  \nako may inilaban ang school namin sa ibang bansa, dito siguro inaasikaso ang mga iyon."
     hide expression justine.get_image("talking") at justine_bottom_left with dissolve
     jump fourth_floors6
+
 label acads1:
+    play sound "audio/walking_sound.mp3"
     scene acad1 at custom_size_transform with fade
+    stop sound
     call screen acads
     return
 
@@ -2814,20 +3101,23 @@ label standard_room:
         hide expression mae.get_image("talking") with dissolve
         # End Flashback
         scene standard_room at custom_size_transform with fade
+        jump fourth_floors6
     else:
         scene standard_room at custom_size_transform with fade
         show expression justine.get_image("talking") at justine_bottom_left
         voice "audio/standard_room/line10.mp3"
         jus "Makes sense. Dito pala pinapanday ang hospitality skills. Every detail counts"
         hide expression justine.get_image("talking") with dissolve
-    jump fourth_floors6
+        jump fourth_floors6
 
 label stair_roofdeck:
+    play sound "audio/walking_sound.mp3"
     scene rf1 at custom_size_transform with fade
     scene rf2 at custom_size_transform with fade
     scene rf3 at custom_size_transform with fade
     scene rf4 at custom_size_transform with fade
     scene rf5 at custom_size_transform with fade
+    stop sound
     show expression justine.get_image("sighing") at justine_bottom_left
     voice "audio/roofdeck/line1.mp3"
     jus "Di pa ko nakakaalis pero namimiss ko na agad dito."
@@ -2847,8 +3137,6 @@ label stair_roofdeck:
             jump fourth_floors1
         "Don't go back":
             jump main_gate_last
-        "Main Gate":
-            jump maingate
 
 label main_gate_last:
     scene rf6 at custom_size_transform with fade
